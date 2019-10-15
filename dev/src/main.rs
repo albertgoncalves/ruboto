@@ -7,22 +7,18 @@ const PING_0: &str = r#"{"id": 0, "type": "ping"}"#;
 const PING_1: &str = r#"{"id": 1, "type": "ping"}"#;
 
 fn handle(message: &str, _out: &ws::Sender) {
-    println!(
-        "{}received{} {}\n",
-        BOLD_BLUE,
-        END,
-        message,
-    );
+    println!("{}received{} {}\n", BOLD_BLUE, END, message);
 }
 
 fn main() {
     ws::connect(env::var("URL").unwrap(), |out: ws::Sender| {
-        let _: Result<(), _> = out.send(PING_0);
-        let _: Result<(), _> = out.send(PING_1);
+        let _: Result<(), ws::Error> = out.send(PING_0);
+        let _: Result<(), ws::Error> = out.send(PING_1);
         move |message: ws::Message| {
-            message.into_text().map(|message| {
-                handle(&message, &out)
-            }).and(Ok(()))
+            message
+                .into_text()
+                .map(|message: String| handle(&message, &out))
+                .and(Ok(()))
         }
     })
     .unwrap()
