@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+# $ cat $WD/.env
+# export SLACK_USER_TOKEN=...
+# export SLACK_BOT_TOKEN=...
+
+set -e
+
+export BOT_ID
+export URL
+api="https://slack.com/api"
+
+cargo build
+
+BOT_ID=$(
+    curl "$api/auth.test?token=$SLACK_BOT_TOKEN" \
+        | jq -r ".user_id"
+)
+
+URL=$(
+    curl "$api/rtm.connect?token=$SLACK_BOT_TOKEN" \
+        | jq -r ".url"
+)
+
+cargo run
