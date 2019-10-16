@@ -1,0 +1,65 @@
+use crate::receive::token;
+
+#[derive(Debug, PartialEq)]
+pub struct Message<'a> {
+    pub user: &'a str,
+    pub text: &'a str,
+}
+
+#[derive(Debug, PartialEq)]
+pub enum Parse<'a> {
+    Message(Message<'a>),
+    Pong(&'a str),
+}
+
+pub fn transform<'a>(tokens: &'a [token::Token]) -> Option<Parse<'a>> {
+    let n: usize = tokens.len();
+    if (n == 0)
+        || (tokens[0] != token::Token::OpenBracket)
+        || (tokens[n - 1] != token::Token::CloseBracket)
+    {
+        return None;
+    }
+    let mut stack: Vec<(&str, &str)> = Vec::with_capacity(((n - 2) / 3) + 1);
+    let mut i: usize = 1;
+    loop {
+        if (i <= n)
+            && ((i + 3) <= n)
+            && (tokens[i + 1] == token::Token::Colon)
+            && ((tokens[i + 3] == token::Token::Comma)
+                || (tokens[i + 3] == token::Token::CloseBracket))
+        {
+            match (&tokens[i], &tokens[i + 2]) {
+                (token::Token::Quotation(k), token::Token::Quotation(v))
+                | (token::Token::Quotation(k), token::Token::Literal(v)) => {
+                    stack.push((k, v));
+                }
+                _ => (),
+            }
+            i += 4;
+        } else {
+            break;
+        }
+    }
+    if stack.is_empty() {
+        return None;
+    }
+    stack.sort_by_key(|kv| kv.0);
+    if (stack.len() == 11)
+        && (stack[6].0 == "text")
+        && (stack[8] == ("type", "message"))
+        && (stack[9].0 == "user")
+    {
+        Some(Parse::Message(Message {
+            user: stack[9].1,
+            text: stack[6].1,
+        }))
+    } else if (stack.len() == 2)
+        && (stack[0].0 == "reply_to")
+        && (stack[1] == ("type", "pong"))
+    {
+        Some(Parse::Pong(stack[0].1))
+    } else {
+        None
+    }
+}

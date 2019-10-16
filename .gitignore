@@ -6,6 +6,7 @@
 !*.nix
 !dev/
 !src/
+!receive/
 !*.toml
 !*.rs
 !main
