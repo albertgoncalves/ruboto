@@ -17,20 +17,22 @@ const PING_1: &str = r#"{"id": 1, "type": "ping"}"#;
 static SEND: sync::atomic::AtomicU8 = sync::atomic::AtomicU8::new(0);
 static RECEIVE: sync::atomic::AtomicU8 = sync::atomic::AtomicU8::new(0);
 
-fn ping(out: &ws::Sender) {
-    thread::sleep(time::Duration::from_secs(5));
-    let receive: u8 = RECEIVE.load(sync::atomic::Ordering::SeqCst);
-    if SEND.load(sync::atomic::Ordering::SeqCst) == receive {
-        if receive == 0 {
-            SEND.store(1, sync::atomic::Ordering::SeqCst);
-            out.send(PING_1).unwrap();
+fn ping(out: sync::Arc<ws::Sender>) {
+    thread::spawn(move || loop {
+        thread::sleep(time::Duration::from_secs(5));
+        let receive: u8 = RECEIVE.load(sync::atomic::Ordering::SeqCst);
+        if SEND.load(sync::atomic::Ordering::SeqCst) == receive {
+            if receive == 0 {
+                SEND.store(1, sync::atomic::Ordering::SeqCst);
+                out.send(PING_1).unwrap();
+            } else {
+                SEND.store(0, sync::atomic::Ordering::SeqCst);
+                out.send(PING_0).unwrap();
+            }
         } else {
-            SEND.store(0, sync::atomic::Ordering::SeqCst);
-            out.send(PING_0).unwrap();
+            process::exit(1)
         }
-    } else {
-        process::exit(1)
-    }
+    });
 }
 
 fn interact(message: &str, _out: &ws::Sender) {
@@ -39,6 +41,7 @@ fn interact(message: &str, _out: &ws::Sender) {
         .as_ref()
         .and_then(|tokens| parse::transform(tokens))
         .map_or((), |payload| {
+            println!("{}parsed{}   {:?}", BOLD_CYAN, END, payload);
             match payload {
                 parse::Parse::Pong("0") => {
                     RECEIVE.store(0, sync::atomic::Ordering::SeqCst)
@@ -48,22 +51,18 @@ fn interact(message: &str, _out: &ws::Sender) {
                 }
                 _ => (),
             }
-            println!("{}parsed{}   {:?}", BOLD_CYAN, END, payload)
         });
     println!()
 }
 
 fn main() {
     ws::connect(env::var("URL").unwrap(), |out: ws::Sender| {
-        let out_ref: sync::Arc<ws::Sender> = sync::Arc::new(out);
-        let out_clone: sync::Arc<ws::Sender> = out_ref.clone();
-        thread::spawn(move || loop {
-            ping(&out_clone)
-        });
+        let out: sync::Arc<ws::Sender> = sync::Arc::new(out);
+        ping(out.clone());
         move |message: ws::Message| {
             message
                 .into_text()
-                .map(|message: String| interact(&message, &out_ref.clone()))
+                .map(|message: String| interact(&message, &out))
                 .and(Ok(()))
         }
     })
