@@ -36,7 +36,7 @@ fn ping(out: sync::Arc<ws::Sender>) {
     });
 }
 
-fn interact(message: &str, _bot_id: &str, _out: &ws::Sender) {
+fn interact(message: &str, bot_id: &str, _out: &ws::Sender) {
     println!("{}received{} {:?}", BOLD_BLUE, END, message);
     receive::token::transform(&message.replace("\\n", "\n"))
         .as_ref()
@@ -50,12 +50,16 @@ fn interact(message: &str, _bot_id: &str, _out: &ws::Sender) {
                 receive::parse::Parse::Pong("1") => {
                     RECEIVE.store(1, sync::atomic::Ordering::SeqCst)
                 }
-                receive::parse::Parse::Message(m) => println!(
-                    "{}tokens{}   {:?}",
-                    BOLD_PINK,
-                    END,
-                    respond::token::transform(m.text),
-                ),
+                receive::parse::Parse::Message(m) => {
+                    if m.user != bot_id {
+                        println!(
+                            "{}tokens{}   {:?}",
+                            BOLD_PINK,
+                            END,
+                            respond::token::transform(m.text),
+                        )
+                    }
+                }
                 _ => (),
             }
         });
@@ -71,7 +75,6 @@ fn main() {
             message
                 .into_text()
                 .map(|message: String| interact(&message, &bot_id, &out))
-                .and(Ok(()))
         }
     })
     .unwrap()
