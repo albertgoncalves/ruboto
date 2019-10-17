@@ -20,7 +20,8 @@ pub fn transform<'a>(tokens: &'a [token::Token]) -> Option<Parse<'a>> {
     {
         return None;
     }
-    let mut stack: Vec<(&str, &str)> = Vec::with_capacity(((n - 2) / 3) + 1);
+    let k: usize = ((n - 2) / 4) + 1;
+    let mut stack: Vec<(&str, &str)> = Vec::with_capacity(k);
     let mut i: usize = 1;
     loop {
         if (i <= n)
@@ -41,6 +42,7 @@ pub fn transform<'a>(tokens: &'a [token::Token]) -> Option<Parse<'a>> {
             break;
         }
     }
+    assert!(stack.capacity() == k);
     if stack.is_empty() {
         return None;
     }

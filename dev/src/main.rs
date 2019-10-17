@@ -1,6 +1,6 @@
 mod receive;
+mod respond;
 
-use receive::{parse, token};
 use std::env;
 use std::process;
 use std::sync;
@@ -10,6 +10,7 @@ use ws;
 
 const BOLD_BLUE: &str = "\x1b[1;34m";
 const BOLD_CYAN: &str = "\x1b[1;36m";
+const BOLD_PINK: &str = "\x1b[1;35m";
 const END: &str = "\x1b[0m";
 const PING_0: &str = r#"{"id": 0, "type": "ping"}"#;
 const PING_1: &str = r#"{"id": 1, "type": "ping"}"#;
@@ -35,20 +36,26 @@ fn ping(out: sync::Arc<ws::Sender>) {
     });
 }
 
-fn interact(message: &str, _out: &ws::Sender) {
-    println!("{}received{} {}", BOLD_BLUE, END, message);
-    token::transform(message)
+fn interact(message: &str, _bot_id: &str, _out: &ws::Sender) {
+    println!("{}received{} {:?}", BOLD_BLUE, END, message);
+    receive::token::transform(&message.replace("\\n", "\n"))
         .as_ref()
-        .and_then(|tokens| parse::transform(tokens))
+        .and_then(|tokens| receive::parse::transform(tokens))
         .map_or((), |payload| {
             println!("{}parsed{}   {:?}", BOLD_CYAN, END, payload);
             match payload {
-                parse::Parse::Pong("0") => {
+                receive::parse::Parse::Pong("0") => {
                     RECEIVE.store(0, sync::atomic::Ordering::SeqCst)
                 }
-                parse::Parse::Pong("1") => {
+                receive::parse::Parse::Pong("1") => {
                     RECEIVE.store(1, sync::atomic::Ordering::SeqCst)
                 }
+                receive::parse::Parse::Message(m) => println!(
+                    "{}tokens{}   {:?}",
+                    BOLD_PINK,
+                    END,
+                    respond::token::transform(m.text),
+                ),
                 _ => (),
             }
         });
@@ -57,12 +64,13 @@ fn interact(message: &str, _out: &ws::Sender) {
 
 fn main() {
     ws::connect(env::var("URL").unwrap(), |out: ws::Sender| {
+        let bot_id: String = env::var("BOT_ID").unwrap();
         let out: sync::Arc<ws::Sender> = sync::Arc::new(out);
         ping(out.clone());
         move |message: ws::Message| {
             message
                 .into_text()
-                .map(|message: String| interact(&message, &out))
+                .map(|message: String| interact(&message, &bot_id, &out))
                 .and(Ok(()))
         }
     })

@@ -52,7 +52,7 @@ pub fn transform(blob: &str) -> Option<Vec<Token>> {
                 _ => loop {
                     if let Some((j, c)) = chars.next() {
                         match c {
-                            ' ' => {
+                            ' ' | '\n' => {
                                 capture!(Token::Literal, i, j);
                             }
                             '}' => {
