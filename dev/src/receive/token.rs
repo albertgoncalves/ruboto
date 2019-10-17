@@ -1,3 +1,6 @@
+use std::iter;
+use std::str;
+
 #[derive(Debug, PartialEq)]
 pub enum Token<'a> {
     OpenBracket,
@@ -13,7 +16,7 @@ pub fn transform(blob: &str) -> Option<Vec<Token>> {
         return None;
     }
     let mut stack: Vec<Token> = Vec::with_capacity(blob.len());
-    let mut chars = blob.chars().enumerate();
+    let mut chars: iter::Enumerate<str::Chars> = blob.chars().enumerate();
     macro_rules! capture {
         ($t:expr, $i:expr, $j:expr $(,)?) => {
             stack.push($t(&blob[$i..$j]));

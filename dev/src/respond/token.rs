@@ -1,7 +1,10 @@
+use std::iter;
+use std::str;
+
 #[derive(Debug, PartialEq)]
 pub enum Token<'a> {
-    Command(&'a str),
-    Content(&'a str),
+    Fn(&'a str),
+    Arg(&'a str),
 }
 
 pub fn transform(message: &str) -> Option<Vec<Token>> {
@@ -11,7 +14,7 @@ pub fn transform(message: &str) -> Option<Vec<Token>> {
     let n: usize = message.len();
     let k: usize = (n / 2) + 1;
     let mut stack: Vec<Token> = Vec::with_capacity(k);
-    let mut chars = message.chars().enumerate();
+    let mut chars: iter::Enumerate<str::Chars> = message.chars().enumerate();
     macro_rules! capture {
         ($t:expr, $i:expr $(,)?) => {
             loop {
@@ -36,8 +39,8 @@ pub fn transform(message: &str) -> Option<Vec<Token>> {
         if let Some((i, c)) = chars.next() {
             match c {
                 ' ' | '\n' => (),
-                '!' => capture!(Token::Command, i + 1),
-                _ => capture!(Token::Content, i),
+                '!' => capture!(Token::Fn, i + 1),
+                _ => capture!(Token::Arg, i),
             }
         } else {
             return Some(stack);

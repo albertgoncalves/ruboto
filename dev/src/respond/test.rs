@@ -12,65 +12,17 @@ mod test {
                 )
             };
         }
-        assert_tokens!(
-            "foo bar",
-            token::Token::Content,
-            token::Token::Content,
-        );
-        assert_tokens!(
-            "foo\nbar",
-            token::Token::Content,
-            token::Token::Content,
-        );
-        assert_tokens!(
-            "foo bar ",
-            token::Token::Content,
-            token::Token::Content,
-        );
-        assert_tokens!(
-            " foo bar ",
-            token::Token::Content,
-            token::Token::Content,
-        );
-        assert_tokens!(
-            "!foo bar",
-            token::Token::Command,
-            token::Token::Content,
-        );
-        assert_tokens!(
-            "!foo\nbar",
-            token::Token::Command,
-            token::Token::Content,
-        );
-        assert_tokens!(
-            "!foo bar ",
-            token::Token::Command,
-            token::Token::Content,
-        );
-        assert_tokens!(
-            " !foo bar ",
-            token::Token::Command,
-            token::Token::Content,
-        );
-        assert_tokens!(
-            "!foo !bar",
-            token::Token::Command,
-            token::Token::Command,
-        );
-        assert_tokens!(
-            "!foo\n!bar",
-            token::Token::Command,
-            token::Token::Command,
-        );
-        assert_tokens!(
-            "!foo !bar ",
-            token::Token::Command,
-            token::Token::Command,
-        );
-        assert_tokens!(
-            " !foo !bar ",
-            token::Token::Command,
-            token::Token::Command,
-        );
+        assert_tokens!("foo bar", token::Token::Arg, token::Token::Arg);
+        assert_tokens!("foo\nbar", token::Token::Arg, token::Token::Arg);
+        assert_tokens!("foo bar ", token::Token::Arg, token::Token::Arg);
+        assert_tokens!(" foo bar ", token::Token::Arg, token::Token::Arg);
+        assert_tokens!("!foo bar", token::Token::Fn, token::Token::Arg);
+        assert_tokens!("!foo\nbar", token::Token::Fn, token::Token::Arg);
+        assert_tokens!("!foo bar ", token::Token::Fn, token::Token::Arg);
+        assert_tokens!(" !foo bar ", token::Token::Fn, token::Token::Arg);
+        assert_tokens!("!foo !bar", token::Token::Fn, token::Token::Fn);
+        assert_tokens!("!foo\n!bar", token::Token::Fn, token::Token::Fn);
+        assert_tokens!("!foo !bar ", token::Token::Fn, token::Token::Fn);
+        assert_tokens!(" !foo !bar ", token::Token::Fn, token::Token::Fn);
     }
 }
