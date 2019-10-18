@@ -56,7 +56,11 @@ fn interact(message: &str, bot_id: &str, _out: &ws::Sender) {
                             "{}tokens{}   {:?}",
                             BOLD_PINK,
                             END,
-                            respond::token::transform(m.text),
+                            respond::token::transform(m.text).and_then(
+                                |tokens| {
+                                    respond::parse::transform(&tokens)
+                                }
+                            ),
                         )
                     }
                 }
