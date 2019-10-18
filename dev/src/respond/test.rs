@@ -105,4 +105,15 @@ mod test {
             token::Token::Arg("foo"),
         );
     }
+
+    #[test]
+    fn token_invalid_fn() {
+        assert_eq!(
+            parse::transform(&[
+                token::Token::Fn("foo"),
+                token::Token::Arg("bar"),
+            ]),
+            None,
+        )
+    }
 }

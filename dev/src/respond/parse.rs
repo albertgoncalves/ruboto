@@ -41,8 +41,8 @@ pub fn transform<'a>(
             token::Token::Fn("join") => {
                 if (i + 1) <= n {
                     match tokens[i + 1] {
-                        token::Token::Arg(left) => {
-                            join!(left);
+                        token::Token::Arg(arg) => {
+                            join!(arg);
                             break_if!();
                         }
                         _ => return None,
@@ -56,7 +56,7 @@ pub fn transform<'a>(
                     return None;
                 }
             }
-            _ => (),
+            token::Token::Fn(_) => return None,
         };
         break_if!();
     }

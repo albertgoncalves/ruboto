@@ -53,7 +53,7 @@ fn interact(message: &str, bot_id: &str, _out: &ws::Sender) {
                 receive::parse::Parse::Message(m) => {
                     if m.user != bot_id {
                         println!(
-                            "{}tokens{}   {:?}",
+                            "{}response{} {:?}",
                             BOLD_PINK,
                             END,
                             respond::token::transform(m.text).and_then(
