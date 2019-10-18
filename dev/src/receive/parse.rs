@@ -1,4 +1,4 @@
-use crate::receive::token;
+use crate::receive::token::Token;
 
 #[derive(Debug, PartialEq)]
 pub struct Message<'a> {
@@ -12,11 +12,11 @@ pub enum Parse<'a> {
     Pong(&'a str),
 }
 
-pub fn transform<'a>(tokens: &'a [token::Token]) -> Option<Parse<'a>> {
+pub fn transform<'a>(tokens: &'a [Token]) -> Option<Parse<'a>> {
     let n: usize = tokens.len();
     if (n == 0)
-        || (tokens[0] != token::Token::OpenBracket)
-        || (tokens[n - 1] != token::Token::CloseBracket)
+        || (tokens[0] != Token::OpenBracket)
+        || (tokens[n - 1] != Token::CloseBracket)
     {
         return None;
     }
@@ -26,13 +26,13 @@ pub fn transform<'a>(tokens: &'a [token::Token]) -> Option<Parse<'a>> {
     loop {
         if (i <= n)
             && ((i + 3) <= n)
-            && (tokens[i + 1] == token::Token::Colon)
-            && ((tokens[i + 3] == token::Token::Comma)
-                || (tokens[i + 3] == token::Token::CloseBracket))
+            && (tokens[i + 1] == Token::Colon)
+            && ((tokens[i + 3] == Token::Comma)
+                || (tokens[i + 3] == Token::CloseBracket))
         {
             match (&tokens[i], &tokens[i + 2]) {
-                (token::Token::Quotation(k), token::Token::Quotation(v))
-                | (token::Token::Quotation(k), token::Token::Literal(v)) => {
+                (Token::Quotation(k), Token::Quotation(v))
+                | (Token::Quotation(k), Token::Literal(v)) => {
                     stack.push((k, v));
                 }
                 _ => (),

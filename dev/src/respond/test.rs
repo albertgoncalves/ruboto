@@ -2,7 +2,7 @@
 mod test {
     use crate::respond::parse;
     use crate::respond::token;
-    use std::borrow;
+    use std::borrow::Cow;
 
     #[test]
     fn token_spaces() {
@@ -41,46 +41,14 @@ mod test {
                 token::Token::Fn("echo"),
                 token::Token::Arg("foo"),
             ]),
-            Some(borrow::Cow::from("foo")),
+            Some(Cow::from("foo")),
         );
         assert_eq!(
             parse::transform(
                 vec![token::Token::Fn("echo"), token::Token::Arg("foo")]
                     .as_slice()
             ),
-            Some(borrow::Cow::from("foo")),
-        );
-    }
-
-    #[test]
-    fn parse_echo_rev() {
-        macro_rules! assert_transform {
-            ($a:expr, $b:expr, $c:expr $(,)?) => {
-                assert_eq!(
-                    parse::transform(&[$a, $b, $c]),
-                    Some(borrow::Cow::from("oof")),
-                )
-            };
-        }
-        assert_transform!(
-            token::Token::Arg("foo"),
-            token::Token::Fn("echo"),
-            token::Token::Fn("rev"),
-        );
-        assert_transform!(
-            token::Token::Fn("echo"),
-            token::Token::Arg("foo"),
-            token::Token::Fn("rev"),
-        );
-        assert_transform!(
-            token::Token::Fn("echo"),
-            token::Token::Fn("rev"),
-            token::Token::Arg("foo"),
-        );
-        assert_transform!(
-            token::Token::Fn("rev"),
-            token::Token::Fn("echo"),
-            token::Token::Arg("foo"),
+            Some(Cow::from("foo")),
         );
     }
 
@@ -90,7 +58,7 @@ mod test {
             ($a:expr, $b:expr, $c:expr $(,)?) => {
                 assert_eq!(
                     parse::transform(&[$a, $b, $c]),
-                    Some(borrow::Cow::from("foo bar")),
+                    Some(Cow::from("foo bar")),
                 )
             };
         }
@@ -98,11 +66,6 @@ mod test {
             token::Token::Fn("join"),
             token::Token::Arg("foo"),
             token::Token::Arg("bar"),
-        );
-        assert_transform!(
-            token::Token::Arg("bar"),
-            token::Token::Fn("join"),
-            token::Token::Arg("foo"),
         );
     }
 
@@ -119,9 +82,6 @@ mod test {
 
     #[test]
     fn parse_invalid_arg() {
-        assert_eq!(
-            parse::transform(&[token::Token::Arg("whaaaaat!?!")]),
-            None,
-        )
+        assert_eq!(parse::transform(&[token::Token::Arg("foo")]), None)
     }
 }

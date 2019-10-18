@@ -1,5 +1,5 @@
-use std::iter;
-use std::str;
+use std::iter::Enumerate;
+use std::str::Chars;
 
 #[derive(Debug, PartialEq)]
 pub enum Token<'a> {
@@ -14,7 +14,7 @@ pub fn transform(message: &str) -> Option<Vec<Token>> {
     let n: usize = message.len();
     let k: usize = (n / 2) + 1;
     let mut stack: Vec<Token> = Vec::with_capacity(k);
-    let mut chars: iter::Enumerate<str::Chars> = message.chars().enumerate();
+    let mut chars: Enumerate<Chars> = message.chars().enumerate();
     macro_rules! capture {
         ($t:expr, $i:expr $(,)?) => {
             loop {

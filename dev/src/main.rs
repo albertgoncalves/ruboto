@@ -1,16 +1,17 @@
 mod receive;
 mod respond;
 
-use std::env;
-use std::process;
+use std::env::var;
+use std::process::exit;
 use std::sync;
 use std::thread;
-use std::time;
+use std::time::Duration;
 use ws;
 
 const BOLD_BLUE: &str = "\x1b[1;34m";
 const BOLD_CYAN: &str = "\x1b[1;36m";
 const BOLD_PINK: &str = "\x1b[1;35m";
+const BOLD_YELLOW: &str = "\x1b[1;33m";
 const END: &str = "\x1b[0m";
 const PING_0: &str = r#"{"id": 0, "type": "ping"}"#;
 const PING_1: &str = r#"{"id": 1, "type": "ping"}"#;
@@ -20,7 +21,7 @@ static RECEIVE: sync::atomic::AtomicU8 = sync::atomic::AtomicU8::new(0);
 
 fn ping(out: sync::Arc<ws::Sender>) {
     thread::spawn(move || loop {
-        thread::sleep(time::Duration::from_secs(5));
+        thread::sleep(Duration::from_secs(5));
         let receive: u8 = RECEIVE.load(sync::atomic::Ordering::SeqCst);
         if SEND.load(sync::atomic::Ordering::SeqCst) == receive {
             if receive == 0 {
@@ -31,7 +32,7 @@ fn ping(out: sync::Arc<ws::Sender>) {
                 out.send(PING_0).unwrap();
             }
         } else {
-            process::exit(1)
+            exit(1)
         }
     });
 }
@@ -52,15 +53,19 @@ fn interact(message: &str, bot_id: &str, _out: &ws::Sender) {
                 }
                 receive::parse::Parse::Message(m) => {
                     if m.user != bot_id {
+                        let tokens: Option<Vec<respond::token::Token>> =
+                            respond::token::transform(m.text);
+                        println!(
+                            "{}tokens{}   {:?}",
+                            BOLD_YELLOW, END, tokens,
+                        );
                         println!(
                             "{}response{} {:?}",
                             BOLD_PINK,
                             END,
-                            respond::token::transform(m.text).and_then(
-                                |tokens| {
-                                    respond::parse::transform(&tokens)
-                                }
-                            ),
+                            tokens.and_then(|tokens| {
+                                respond::parse::transform(&tokens)
+                            }),
                         )
                     }
                 }
@@ -71,8 +76,8 @@ fn interact(message: &str, bot_id: &str, _out: &ws::Sender) {
 }
 
 fn main() {
-    ws::connect(env::var("URL").unwrap(), |out: ws::Sender| {
-        let bot_id: String = env::var("BOT_ID").unwrap();
+    ws::connect(var("URL").unwrap(), |out: ws::Sender| {
+        let bot_id: String = var("BOT_ID").unwrap();
         let out: sync::Arc<ws::Sender> = sync::Arc::new(out);
         ping(out.clone());
         move |message: ws::Message| {
