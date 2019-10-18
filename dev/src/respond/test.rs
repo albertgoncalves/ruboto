@@ -35,7 +35,7 @@ mod test {
     }
 
     #[test]
-    fn token_echo() {
+    fn parse_echo() {
         assert_eq!(
             parse::transform(&[
                 token::Token::Fn("echo"),
@@ -53,7 +53,7 @@ mod test {
     }
 
     #[test]
-    fn token_echo_rev() {
+    fn parse_echo_rev() {
         macro_rules! assert_transform {
             ($a:expr, $b:expr, $c:expr $(,)?) => {
                 assert_eq!(
@@ -85,7 +85,7 @@ mod test {
     }
 
     #[test]
-    fn token_join() {
+    fn parse_join() {
         macro_rules! assert_transform {
             ($a:expr, $b:expr, $c:expr $(,)?) => {
                 assert_eq!(
@@ -107,12 +107,20 @@ mod test {
     }
 
     #[test]
-    fn token_invalid_fn() {
+    fn parse_invalid_fn() {
         assert_eq!(
             parse::transform(&[
                 token::Token::Fn("foo"),
                 token::Token::Arg("bar"),
             ]),
+            None,
+        )
+    }
+
+    #[test]
+    fn parse_invalid_arg() {
+        assert_eq!(
+            parse::transform(&[token::Token::Arg("whaaaaat!?!")]),
             None,
         )
     }
