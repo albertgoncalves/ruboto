@@ -6,11 +6,10 @@
 
 set -e
 
-export API
+export API="https://slack.com/api"
+
 export BOT_ID
 export URL
-
-API="https://slack.com/api"
 
 main() {
     BOT_ID=$(curl "$API/auth.test?token=$SLACK_BOT_TOKEN" | jq -r ".user_id")
