@@ -7,6 +7,7 @@ pub enum Token<'a> {
     Arg(&'a str),
 }
 
+#[allow(clippy::single_match)]
 pub fn transform(message: &str) -> Option<Vec<Token>> {
     if message.is_empty() {
         return None;
@@ -16,11 +17,11 @@ pub fn transform(message: &str) -> Option<Vec<Token>> {
     let mut stack: Vec<Token> = Vec::with_capacity(k);
     let mut chars: Enumerate<Chars> = message.chars().enumerate();
     macro_rules! capture {
-        ($t:expr, $i:expr $(,)?) => {
+        ($t:expr, $i:expr, $d1:expr $(, $d2:expr)? $(,)?) => {
             loop {
                 if let Some((j, c)) = chars.next() {
                     match c {
-                        ' ' | '\n' => {
+                        $d1 $(| $d2)? => {
                             stack.push($t(&message[$i..j]));
                             break;
                         }
@@ -35,12 +36,31 @@ pub fn transform(message: &str) -> Option<Vec<Token>> {
             }
         };
     }
+    macro_rules! capture_strict {
+        ($t:expr, $i:expr, $d:expr $(,)?) => {
+            loop {
+                if let Some((j, c)) = chars.next() {
+                    match c {
+                        $d => {
+                            stack.push($t(&message[$i..j]));
+                            break;
+                        }
+                        _ => (),
+                    }
+                } else {
+                    return None;
+                }
+            }
+        };
+    }
     loop {
         if let Some((i, c)) = chars.next() {
             match c {
                 ' ' | '\n' => (),
-                '!' => capture!(Token::Fn, i + 1),
-                _ => capture!(Token::Arg, i),
+                '\"' => capture_strict!(Token::Arg, i + 1, '\"'),
+                '\'' => capture_strict!(Token::Arg, i + 1, '\''),
+                '!' => capture!(Token::Fn, i + 1, ' ', '\n'),
+                _ => capture!(Token::Arg, i, ' ', '\n'),
             }
         } else {
             return Some(stack);

@@ -1,6 +1,8 @@
 mod receive;
 mod respond;
+mod test;
 
+use std::borrow::Cow;
 use std::env::var;
 use std::process::exit;
 use std::sync;
@@ -37,9 +39,47 @@ fn ping(out: sync::Arc<ws::Sender>) {
     });
 }
 
-fn interact(message: &str, bot_id: &str, _out: &ws::Sender) {
+fn send(
+    channel: &str,
+    message: &str,
+    out: &ws::Sender,
+) -> Result<(), ws::Error> {
+    let a: &str = "{\"id\":0,\"type\":\"message\",\"channel\":\"";
+    let b: &str = "\",\"text\":\"";
+    let c: &str = "\"}";
+    let mut payload: String = String::with_capacity(
+        a.len() + channel.len() + b.len() + message.len() + c.len(),
+    );
+    payload.push_str(a);
+    payload.push_str(channel);
+    payload.push_str(b);
+    payload.push_str(message);
+    payload.push_str(c);
+    out.send(payload)
+}
+
+fn sanitize(input: &str) -> String {
+    let n: usize = input.len();
+    let mut output: String = String::with_capacity(n);
+    let chars: Vec<char> = input.chars().collect::<Vec<char>>();
+    match chars[0] {
+        '\\' => (),
+        '\n' => output.push(' '),
+        c => output.push(c),
+    }
+    for i in 0..(n - 1) {
+        match (chars[i], chars[i + 1]) {
+            ('\\', 'n') | (_, '\n') => output.push(' '),
+            (_, '\\') => (),
+            (_, c) => output.push(c),
+        }
+    }
+    output
+}
+
+fn interact(message: &str, bot_id: &str, out: &ws::Sender) {
     println!("{}received{} {:?}", BOLD_BLUE, END, message);
-    receive::token::transform(&message.replace("\\n", "\n"))
+    receive::token::transform(message)
         .as_ref()
         .and_then(|tokens| receive::parse::transform(tokens))
         .map_or((), |payload| {
@@ -53,20 +93,29 @@ fn interact(message: &str, bot_id: &str, _out: &ws::Sender) {
                 }
                 receive::parse::Parse::Message(m) => {
                     if m.user != bot_id {
+                        let text: String = sanitize(m.text);
                         let tokens: Option<Vec<respond::token::Token>> =
-                            respond::token::transform(m.text);
+                            respond::token::transform(&text);
                         println!(
                             "{}tokens{}   {:?}",
-                            BOLD_YELLOW, END, tokens,
+                            BOLD_YELLOW, //
+                            END,         //
+                            tokens,
                         );
-                        println!(
-                            "{}response{} {:?}",
-                            BOLD_PINK,
-                            END,
+                        let response: Option<Cow<str>> =
                             tokens.and_then(|tokens| {
                                 respond::parse::transform(&tokens)
-                            }),
-                        )
+                            });
+                        println!(
+                            "{}response{} {:?}",
+                            BOLD_PINK, //
+                            END,       //
+                            response
+                        );
+                        if let Some(r) = response {
+                            let _: Result<(), ws::Error> =
+                                send(m.channel, &r, out);
+                        }
                     }
                 }
                 _ => (),

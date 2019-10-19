@@ -5,7 +5,7 @@ mod test {
     use std::borrow::Cow;
 
     #[test]
-    fn token_spaces() {
+    fn token_space() {
         macro_rules! assert_tokens {
             ($m:expr, $t1:expr, $t2:expr $(,)?) => {
                 assert_eq!(
@@ -35,6 +35,32 @@ mod test {
     }
 
     #[test]
+    fn token_quotation() {
+        assert_eq!(
+            token::transform("\"foo bar\""),
+            Some(vec![token::Token::Arg("foo bar")]),
+        );
+        assert_eq!(
+            token::transform("\'foo bar\'"),
+            Some(vec![token::Token::Arg("foo bar")]),
+        );
+        assert_eq!(token::transform("\'foo bar"), None);
+        assert_eq!(token::transform("\"foo bar"), None);
+        assert_eq!(
+            token::transform("\"foo\nbar\""),
+            Some(vec![token::Token::Arg("foo\nbar")]),
+        );
+        assert_eq!(
+            token::transform("\'foo\nbar\'"),
+            Some(vec![token::Token::Arg("foo\nbar")]),
+        );
+        assert_eq!(
+            token::transform("\"foo\"bar"),
+            Some(vec![token::Token::Arg("foo"), token::Token::Arg("bar")]),
+        );
+    }
+
+    #[test]
     fn parse_echo() {
         assert_eq!(
             parse::transform(&[
@@ -49,6 +75,13 @@ mod test {
                     .as_slice()
             ),
             Some(Cow::from("foo")),
+        );
+        assert_eq!(
+            parse::transform(&[
+                token::Token::Fn("echo"),
+                token::Token::Arg("foo bar"),
+            ]),
+            Some(Cow::from("foo bar")),
         );
     }
 

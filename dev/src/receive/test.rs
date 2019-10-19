@@ -99,8 +99,9 @@ mod test {
         assert_eq!(
             parse::transform(&MESSAGE),
             Some(parse::Parse::Message(parse::Message {
+                channel: "CHANNEL1234",
+                text: "\\\"hey\\\"",
                 user: "USER1234",
-                text: "\\\"hey\\\""
             }))
         )
     }

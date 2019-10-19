@@ -2,8 +2,9 @@ use crate::receive::token::Token;
 
 #[derive(Debug, PartialEq)]
 pub struct Message<'a> {
-    pub user: &'a str,
+    pub channel: &'a str,
     pub text: &'a str,
+    pub user: &'a str,
 }
 
 #[derive(Debug, PartialEq)]
@@ -48,13 +49,15 @@ pub fn transform<'a>(tokens: &'a [Token]) -> Option<Parse<'a>> {
     }
     stack.sort_by_key(|kv| kv.0);
     if (stack.len() == 11)
+        && (stack[0].0 == "channel")
         && (stack[6].0 == "text")
         && (stack[8] == ("type", "message"))
         && (stack[9].0 == "user")
     {
         Some(Parse::Message(Message {
-            user: stack[9].1,
+            channel: stack[0].1,
             text: stack[6].1,
+            user: stack[9].1,
         }))
     } else if (stack.len() == 2)
         && (stack[0].0 == "reply_to")
