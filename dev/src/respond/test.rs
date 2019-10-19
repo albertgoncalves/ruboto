@@ -87,18 +87,24 @@ mod test {
 
     #[test]
     fn parse_join() {
-        macro_rules! assert_transform {
-            ($a:expr, $b:expr, $c:expr $(,)?) => {
-                assert_eq!(
-                    parse::transform(&[$a, $b, $c]),
-                    Some(Cow::from("foo bar")),
-                )
-            };
-        }
-        assert_transform!(
-            token::Token::Fn("join"),
-            token::Token::Arg("foo"),
-            token::Token::Arg("bar"),
+        assert_eq!(
+            parse::transform(&[
+                token::Token::Fn("join"),
+                token::Token::Arg("foo"),
+                token::Token::Arg("bar"),
+            ]),
+            Some(Cow::from("foo bar")),
+        );
+    }
+
+    #[test]
+    fn parse_rev() {
+        assert_eq!(
+            parse::transform(&[
+                token::Token::Fn("rev"),
+                token::Token::Arg("foo bar baz"),
+            ]),
+            Some(Cow::from("zab rab oof")),
         );
     }
 
