@@ -21,16 +21,28 @@ const PING_1: &str = r#"{"id": 1, "type": "ping"}"#;
 static SEND: sync::atomic::AtomicU8 = sync::atomic::AtomicU8::new(0);
 static RECEIVE: sync::atomic::AtomicU8 = sync::atomic::AtomicU8::new(0);
 
+macro_rules! store {
+    ($a:expr, $v:expr $(,)?) => {
+        $a.store($v, sync::atomic::Ordering::SeqCst)
+    };
+}
+
+macro_rules! load {
+    ($a:expr $(,)?) => {
+        $a.load(sync::atomic::Ordering::SeqCst)
+    };
+}
+
 fn ping(out: sync::Arc<ws::Sender>) {
     thread::spawn(move || loop {
         thread::sleep(Duration::from_secs(5));
-        let receive: u8 = RECEIVE.load(sync::atomic::Ordering::SeqCst);
-        if SEND.load(sync::atomic::Ordering::SeqCst) == receive {
+        let receive: u8 = load!(RECEIVE);
+        if load!(SEND) == receive {
             if receive == 0 {
-                SEND.store(1, sync::atomic::Ordering::SeqCst);
+                store!(SEND, 1);
                 out.send(PING_1).unwrap();
             } else {
-                SEND.store(0, sync::atomic::Ordering::SeqCst);
+                store!(SEND, 0);
                 out.send(PING_0).unwrap();
             }
         } else {
@@ -85,12 +97,8 @@ fn interact(message: &str, bot_id: &str, out: &ws::Sender) {
         .map_or((), |payload| {
             println!("{}parsed{}   {:?}", BOLD_CYAN, END, payload);
             match payload {
-                receive::parse::Parse::Pong("0") => {
-                    RECEIVE.store(0, sync::atomic::Ordering::SeqCst)
-                }
-                receive::parse::Parse::Pong("1") => {
-                    RECEIVE.store(1, sync::atomic::Ordering::SeqCst)
-                }
+                receive::parse::Parse::Pong("0") => store!(RECEIVE, 0),
+                receive::parse::Parse::Pong("1") => store!(RECEIVE, 1),
                 receive::parse::Parse::Message(m) => {
                     if m.user != bot_id {
                         let text: String = sanitize(m.text);
