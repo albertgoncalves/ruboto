@@ -70,21 +70,21 @@ mod test {
     fn parse_echo() {
         assert_eq!(
             parse::transform(&[
-                token::Token::Fn("echo"),
+                token::Token::Fn("ECHO"),
                 token::Token::Arg("foo"),
             ]),
             Some(Cow::from("foo")),
         );
         assert_eq!(
             parse::transform(
-                vec![token::Token::Fn("echo"), token::Token::Arg("foo")]
+                vec![token::Token::Fn("ECHO"), token::Token::Arg("foo")]
                     .as_slice()
             ),
             Some(Cow::from("foo")),
         );
         assert_eq!(
             parse::transform(&[
-                token::Token::Fn("echo"),
+                token::Token::Fn("ECHO"),
                 token::Token::Arg("foo bar"),
             ]),
             Some(Cow::from("foo bar")),
@@ -95,7 +95,7 @@ mod test {
     fn parse_join() {
         assert_eq!(
             parse::transform(&[
-                token::Token::Fn("join"),
+                token::Token::Fn("JOIN"),
                 token::Token::Arg("foo"),
                 token::Token::Arg("bar"),
             ]),
@@ -107,10 +107,81 @@ mod test {
     fn parse_rev() {
         assert_eq!(
             parse::transform(&[
-                token::Token::Fn("rev"),
+                token::Token::Fn("REV"),
                 token::Token::Arg("foo bar baz"),
             ]),
             Some(Cow::from("zab rab oof")),
+        );
+    }
+
+    #[test]
+    fn parse_ban() {
+        assert_eq!(
+            parse::transform(&[
+                token::Token::Fn("ban"),
+                token::Token::Arg("foo bar"),
+            ]),
+            Some(Cow::from(
+                ":robot_face::no_entry: \
+                 foo bar has been banned \
+                 :no_entry::robot_face:"
+            )),
+        );
+    }
+
+    #[test]
+    fn parse_bday() {
+        assert_eq!(
+            parse::transform(&[
+                token::Token::Fn("bday"),
+                token::Token::Arg("foo bar"),
+            ]),
+            Some(Cow::from(
+                ":robot_face::birthday: \
+                 Happy birthday, foo bar! \
+                 :birthday::robot_face:"
+            )),
+        );
+    }
+
+    #[test]
+    fn parse_welcome() {
+        assert_eq!(
+            parse::transform(&[
+                token::Token::Fn("welcome"),
+                token::Token::Arg("foo bar"),
+            ]),
+            Some(Cow::from(
+                ":robot_face::open_hands: \
+                 Welcome, foo bar! \
+                 :open_hands::robot_face:"
+            )),
+        );
+    }
+
+    #[test]
+    fn parse_savage() {
+        assert_eq!(
+            parse::transform(&[
+                token::Token::Fn("savage"),
+                token::Token::Arg("foo bar"),
+            ]),
+            Some(Cow::from(
+                ":robot_face::savage: foo bar is like a single grain of sand \
+                 in the Sahara desert that is Macho Madness \
+                 :savage::robot_face:"
+            )),
+        );
+        assert_eq!(
+            parse::transform(&[
+                token::Token::Fn("savage"),
+                token::Token::Arg("foo bars"),
+            ]),
+            Some(Cow::from(
+                ":robot_face::savage: foo bars are like a single grain of \
+                 sand in the Sahara desert that is Macho Madness \
+                 :savage::robot_face:"
+            )),
         );
     }
 
