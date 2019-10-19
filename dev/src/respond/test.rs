@@ -35,6 +35,12 @@ mod test {
     }
 
     #[test]
+    fn test_empty() {
+        assert_eq!(token::transform(""), None);
+        assert_eq!(token::transform("\"\""), None);
+    }
+
+    #[test]
     fn token_quotation() {
         assert_eq!(
             token::transform("\"foo bar\""),
