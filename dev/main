@@ -12,12 +12,12 @@ export BOT_ID
 export URL
 
 main() {
+    cargo build --release
     BOT_ID=$(curl "$API/auth.test?token=$SLACK_BOT_TOKEN" | jq -r ".user_id")
     URL=$(curl "$API/rtm.connect?token=$SLACK_BOT_TOKEN" | jq -r ".url")
-    cargo run
+    cargo run --release
 }
 
 while true; do
-    cargo build
     main || true
 done
