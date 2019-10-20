@@ -4,4 +4,4 @@ version = "0.1.0"
 edition = "2018"
 
 [dependencies]
-ws = { version = "0.9", features = ["ssl"] }
+ws = { version = "0.6", features = ["ssl"] }
