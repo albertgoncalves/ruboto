@@ -70,10 +70,16 @@ fn send(
     out.send(payload)
 }
 
+/* https://api.slack.com/docs/message-formatting */
 fn sanitize(input: &str) -> String {
-    let n: usize = input.len();
+    let chars: Vec<char> = input
+        .replace("&amp;", "&")
+        .replace("&lt;", "<")
+        .replace("&gt;", ">")
+        .chars()
+        .collect::<Vec<char>>();
+    let n: usize = chars.len();
     let mut output: String = String::with_capacity(n);
-    let chars: Vec<char> = input.chars().collect::<Vec<char>>();
     match chars[0] {
         '\\' => (),
         '\n' => output.push(' '),
@@ -82,7 +88,12 @@ fn sanitize(input: &str) -> String {
     for i in 0..(n - 1) {
         match (chars[i], chars[i + 1]) {
             ('\\', 'n') | (_, '\n') => output.push(' '),
-            (_, '\\') => (),
+            (_, '\\')
+            | (_, '*')
+            | (_, '_')
+            | (_, '~')
+            | (_, '`')
+            | (_, '>') => (),
             (_, c) => output.push(c),
         }
     }
