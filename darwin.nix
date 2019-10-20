@@ -3,7 +3,6 @@ mkShell {
     buildInputs = [
         jq
         openssl
-        rlwrap
         rustup
         shellcheck
     ];

@@ -4,7 +4,6 @@ mkShell {
         jq
         openssl
         pkg-config
-        rlwrap
         rustup
         shellcheck
     ];
