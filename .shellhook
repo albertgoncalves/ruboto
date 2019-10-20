@@ -11,9 +11,9 @@ export WD=$PWD
 export RUSTUP_HOME="$WD/.rustup_home"
 export CARGO_HOME="$WD/.cargo_home"
 
-for dir in $RUSTUP_HOME $CARGO_HOME/bin; do
-    if [ ! -d "$dir" ]; then
-        mkdir -p "$dir"
+for x in $RUSTUP_HOME $CARGO_HOME/bin; do
+    if [ ! -d "$x" ]; then
+        mkdir -p "$x"
     fi
 done
 
