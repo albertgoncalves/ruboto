@@ -67,6 +67,7 @@ pub fn transform<'a>(tokens: &[Token<'a>]) -> Option<Cow<'a, str>> {
         [Token::Fn("JOIN"), Token::Arg(left), Token::Arg(right)] => {
             Some(join(left, right))
         }
+        [Token::Fn("WORD")] => Some(Cow::from("expediency")),
         [Token::Fn("ban"), Token::Arg(arg)] => Some(ban(arg)),
         [Token::Fn("bday"), Token::Arg(arg)] => Some(bday(arg)),
         [Token::Fn("welcome"), Token::Arg(arg)] => Some(welcome(arg)),
