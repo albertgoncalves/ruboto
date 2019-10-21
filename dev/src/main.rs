@@ -100,6 +100,16 @@ fn sanitize(input: &str) -> String {
     output
 }
 
+fn bot(text: &str) -> Option<Cow<'_, str>> {
+    let tokens: Option<Vec<respond::token::Token>> =
+        respond::token::transform(text);
+    println!("{}tokens{}   {:?}", BOLD_YELLOW, END, tokens);
+    let response: Option<Cow<str>> =
+        tokens.and_then(|tokens| respond::parse::transform(&tokens));
+    println!("{}response{} {:?}", BOLD_PINK, END, response);
+    response
+}
+
 fn interact(message: &str, bot_id: &str, out: &ws::Sender) {
     println!("{}received{} {:?}", BOLD_BLUE, END, message);
     receive::token::transform(message)
@@ -112,26 +122,7 @@ fn interact(message: &str, bot_id: &str, out: &ws::Sender) {
                 receive::parse::Parse::Pong("1") => store!(RECEIVE, 1),
                 receive::parse::Parse::Message(m) => {
                     if m.user != bot_id {
-                        let text: String = sanitize(m.text);
-                        let tokens: Option<Vec<respond::token::Token>> =
-                            respond::token::transform(&text);
-                        println!(
-                            "{}tokens{}   {:?}",
-                            BOLD_YELLOW, //
-                            END,         //
-                            tokens,
-                        );
-                        let response: Option<Cow<str>> =
-                            tokens.and_then(|tokens| {
-                                respond::parse::transform(&tokens)
-                            });
-                        println!(
-                            "{}response{} {:?}",
-                            BOLD_PINK, //
-                            END,       //
-                            response
-                        );
-                        if let Some(r) = response {
+                        if let Some(r) = bot(&sanitize(m.text)) {
                             let _: Result<(), ws::Error> =
                                 send(m.channel, &r, out);
                         }
