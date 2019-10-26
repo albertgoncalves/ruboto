@@ -35,7 +35,7 @@ mod test {
     }
 
     #[test]
-    fn test_empty() {
+    fn token_empty() {
         assert_eq!(token::transform(""), None);
         assert_eq!(token::transform("\"\""), None);
     }
