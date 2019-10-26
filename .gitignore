@@ -1,8 +1,8 @@
 *
 !.gitignore
 !*.nix
-!.shellhook
 !shell
+!.shellhook
 !dev/
 !src/
 !receive/
