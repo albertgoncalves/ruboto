@@ -19,5 +19,7 @@ main() {
 }
 
 while true; do
-    main || true
+    if main; then
+        break
+    fi
 done
