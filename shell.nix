@@ -2,6 +2,7 @@ with import <nixpkgs> {};
 let
     shared = [
         jq
+        openssl_1_0_2
         rustup
         shellcheck
     ];
@@ -10,16 +11,14 @@ let
         . .shellhook
     '';
 in
-{ 
+{
     darwin = mkShell {
-        buildInputs = [
-            openssl_1_0_2
-        ] ++ shared;
+        buildInputs = shared;
         shellHook = hook;
     };
-    linux = mkShell {
+    linux = gccStdenv.mkDerivation {
+        name = "_";
         buildInputs = [
-            openssl
             pkg-config
         ] ++ shared;
         shellHook = hook;
