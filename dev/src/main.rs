@@ -1,3 +1,4 @@
+mod heartbeat;
 mod receive;
 mod respond;
 mod test;
@@ -6,8 +7,6 @@ use std::borrow::Cow;
 use std::env::var;
 use std::process::exit;
 use std::sync;
-use std::thread;
-use std::time::Duration;
 use ws;
 
 const BOLD_BLUE: &str = "\x1b[1;34m";
@@ -15,24 +14,7 @@ const BOLD_CYAN: &str = "\x1b[1;36m";
 const BOLD_PINK: &str = "\x1b[1;35m";
 const BOLD_YELLOW: &str = "\x1b[1;33m";
 const END: &str = "\x1b[0m";
-const PING_0: &str = r#"{"id": 0, "type": "ping"}"#;
-const PING_1: &str = r#"{"id": 1, "type": "ping"}"#;
 const BACKDOOR: &str = "!HALT";
-
-static SEND: sync::atomic::AtomicU8 = sync::atomic::AtomicU8::new(0);
-static RECEIVE: sync::atomic::AtomicU8 = sync::atomic::AtomicU8::new(0);
-
-macro_rules! store {
-    ($a:expr, $v:expr $(,)?) => {
-        $a.store($v, sync::atomic::Ordering::SeqCst)
-    };
-}
-
-macro_rules! load {
-    ($a:expr $(,)?) => {
-        $a.load(sync::atomic::Ordering::SeqCst)
-    };
-}
 
 macro_rules! backdoor {
     ($t:expr $(,)?) => {
@@ -40,24 +22,6 @@ macro_rules! backdoor {
             exit(0)
         }
     };
-}
-
-fn ping(out: sync::Arc<ws::Sender>) {
-    thread::spawn(move || loop {
-        thread::sleep(Duration::from_secs(5));
-        let receive: u8 = load!(RECEIVE);
-        if load!(SEND) == receive {
-            if receive == 0 {
-                store!(SEND, 1);
-                out.send(PING_1).unwrap();
-            } else {
-                store!(SEND, 0);
-                out.send(PING_0).unwrap();
-            }
-        } else {
-            exit(1)
-        }
-    });
 }
 
 fn send(
@@ -127,8 +91,12 @@ fn interact(message: &str, bot_id: &str, out: &ws::Sender) {
         .map_or((), |payload| {
             println!("{}parsed{}   {:?}", BOLD_CYAN, END, payload);
             match payload {
-                receive::parse::Parse::Pong("0") => store!(RECEIVE, 0),
-                receive::parse::Parse::Pong("1") => store!(RECEIVE, 1),
+                receive::parse::Parse::Pong("0") => {
+                    store!(heartbeat::RECEIVE, 0)
+                }
+                receive::parse::Parse::Pong("1") => {
+                    store!(heartbeat::RECEIVE, 1)
+                }
                 receive::parse::Parse::Message(m) => {
                     backdoor!(m.text);
                     if m.user != bot_id {
@@ -148,7 +116,7 @@ fn main() {
     ws::connect(var("URL").unwrap(), |out: ws::Sender| {
         let bot_id: String = var("BOT_ID").unwrap();
         let out: sync::Arc<ws::Sender> = sync::Arc::new(out);
-        ping(out.clone());
+        heartbeat::ping(out.clone());
         move |message: ws::Message| {
             message
                 .into_text()
