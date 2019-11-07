@@ -17,6 +17,7 @@ const BOLD_YELLOW: &str = "\x1b[1;33m";
 const END: &str = "\x1b[0m";
 const PING_0: &str = r#"{"id": 0, "type": "ping"}"#;
 const PING_1: &str = r#"{"id": 1, "type": "ping"}"#;
+const BACKDOOR: &str = "!HALT";
 
 static SEND: sync::atomic::AtomicU8 = sync::atomic::AtomicU8::new(0);
 static RECEIVE: sync::atomic::AtomicU8 = sync::atomic::AtomicU8::new(0);
@@ -30,6 +31,14 @@ macro_rules! store {
 macro_rules! load {
     ($a:expr $(,)?) => {
         $a.load(sync::atomic::Ordering::SeqCst)
+    };
+}
+
+macro_rules! backdoor {
+    ($t:expr $(,)?) => {
+        if $t == BACKDOOR {
+            exit(0)
+        }
     };
 }
 
@@ -121,6 +130,7 @@ fn interact(message: &str, bot_id: &str, out: &ws::Sender) {
                 receive::parse::Parse::Pong("0") => store!(RECEIVE, 0),
                 receive::parse::Parse::Pong("1") => store!(RECEIVE, 1),
                 receive::parse::Parse::Message(m) => {
+                    backdoor!(m.text);
                     if m.user != bot_id {
                         if let Some(r) = bot(&sanitize(m.text)) {
                             let _: Result<(), ws::Error> =
