@@ -15,7 +15,7 @@ const BACKDOOR: &str = "!HALT";
 macro_rules! backdoor {
     ($t:expr $(,)?) => {
         if $t == BACKDOOR {
-            exit(-1)
+            exit(0)
         }
     };
 }
@@ -139,5 +139,6 @@ fn main() {
                 .map(|message: String| interact(&message, &bot_id, &out))
         }
     })
-    .unwrap()
+    .unwrap();
+    println!("{}end{}", terminal::BOLD_RED, terminal::END);
 }
