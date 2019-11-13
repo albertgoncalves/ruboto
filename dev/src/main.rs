@@ -19,7 +19,7 @@ const BACKDOOR: &str = "!HALT";
 macro_rules! backdoor {
     ($t:expr $(,)?) => {
         if $t == BACKDOOR {
-            exit(0)
+            exit(-1)
         }
     };
 }

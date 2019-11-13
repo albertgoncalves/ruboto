@@ -18,6 +18,6 @@ main() {
     cargo run --release
 }
 
-while ! main; do
+while main != -1; do
     printf "\n"
 done
