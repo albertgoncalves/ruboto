@@ -1,3 +1,4 @@
+use crate::terminal;
 use std::process::exit;
 use std::sync;
 use std::thread;
@@ -23,6 +24,12 @@ macro_rules! load {
     };
 }
 
+macro_rules! print_ping {
+    ($p:expr $(,)?) => {
+        println!("{}ping{}     {:?}", terminal::BOLD_WHITE, terminal::END, $p)
+    };
+}
+
 pub fn ping(out: sync::Arc<ws::Sender>) {
     thread::spawn(move || loop {
         thread::sleep(Duration::from_secs(5));
@@ -31,9 +38,11 @@ pub fn ping(out: sync::Arc<ws::Sender>) {
             if receive == 0 {
                 store!(SEND, 1);
                 out.send(PING_1).unwrap();
+                print_ping!(1);
             } else {
                 store!(SEND, 0);
                 out.send(PING_0).unwrap();
+                print_ping!(0);
             }
         } else {
             exit(1)
