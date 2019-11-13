@@ -1,6 +1,7 @@
 mod heartbeat;
 mod receive;
 mod respond;
+mod terminal;
 mod test;
 
 use std::borrow::Cow;
@@ -9,11 +10,6 @@ use std::process::exit;
 use std::sync;
 use ws;
 
-const BOLD_BLUE: &str = "\x1b[1;34m";
-const BOLD_CYAN: &str = "\x1b[1;36m";
-const BOLD_PINK: &str = "\x1b[1;35m";
-const BOLD_YELLOW: &str = "\x1b[1;33m";
-const END: &str = "\x1b[0m";
 const BACKDOOR: &str = "!HALT";
 
 macro_rules! backdoor {
@@ -76,20 +72,40 @@ fn sanitize(input: &str) -> String {
 fn bot(text: &str) -> Option<Cow<'_, str>> {
     let tokens: Option<Vec<respond::token::Token>> =
         respond::token::transform(text);
-    println!("{}tokens{}   {:?}", BOLD_YELLOW, END, tokens);
+    println!(
+        "{}tokens{}   {:?}",
+        terminal::BOLD_YELLOW,
+        terminal::END,
+        tokens,
+    );
     let response: Option<Cow<str>> =
         tokens.and_then(|tokens| respond::parse::transform(&tokens));
-    println!("{}response{} {:?}", BOLD_PINK, END, response);
+    println!(
+        "{}response{} {:?}",
+        terminal::BOLD_PINK,
+        terminal::END,
+        response,
+    );
     response
 }
 
 fn interact(message: &str, bot_id: &str, out: &ws::Sender) {
-    println!("{}received{} {:?}", BOLD_BLUE, END, message);
+    println!(
+        "{}received{} {:?}",
+        terminal::BOLD_BLUE,
+        terminal::END,
+        message,
+    );
     receive::token::transform(message)
         .as_ref()
         .and_then(|tokens| receive::parse::transform(tokens))
         .map_or((), |payload| {
-            println!("{}parsed{}   {:?}", BOLD_CYAN, END, payload);
+            println!(
+                "{}parsed{}   {:?}",
+                terminal::BOLD_CYAN,
+                terminal::END,
+                payload,
+            );
             match payload {
                 receive::parse::Parse::Pong("0") => {
                     store!(heartbeat::RECEIVE, 0)
