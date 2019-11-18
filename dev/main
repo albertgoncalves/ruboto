@@ -18,6 +18,16 @@ main() {
     cargo run --release
 }
 
-while ! main; do
-    printf "\n"
+export EXIT_CODE
+
+while true; do
+    set +e
+    main
+    EXIT_CODE=$?
+    set -e
+    # https://misc.flogisoft.com/bash/tip_colors_and_formatting
+    printf "\e[1;30;47mexit\e[0m     %d\n" $EXIT_CODE
+    if [ $EXIT_CODE -eq 0 ]; then
+        break
+    fi
 done

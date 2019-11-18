@@ -141,4 +141,5 @@ fn main() {
     })
     .unwrap();
     println!("{}end{}", terminal::BOLD_RED, terminal::END);
+    exit(1);
 }
