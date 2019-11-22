@@ -3,6 +3,8 @@ use std::str::Chars;
 
 #[derive(Debug, PartialEq)]
 pub enum Token<'a> {
+    OpenBrace,
+    CloseBrace,
     OpenBracket,
     CloseBracket,
     Colon,
@@ -33,10 +35,12 @@ pub fn transform(blob: &str) -> Option<Vec<Token>> {
             match c {
                 ' ' | '\n' => (),
                 '\\' => return None,
-                '{' => stack.push(Token::OpenBracket),
-                '}' => stack.push(Token::CloseBracket),
+                '{' => stack.push(Token::OpenBrace),
+                '}' => stack.push(Token::CloseBrace),
                 ':' => stack.push(Token::Colon),
                 ',' => stack.push(Token::Comma),
+                '[' => stack.push(Token::OpenBracket),
+                ']' => stack.push(Token::CloseBracket),
                 '\"' => loop {
                     if let Some((j, c)) = chars.next() {
                         match c {
@@ -63,7 +67,7 @@ pub fn transform(blob: &str) -> Option<Vec<Token>> {
                                     Token::Literal,
                                     i,
                                     j,
-                                    Token::CloseBracket,
+                                    Token::CloseBrace,
                                 );
                             }
                             ',' => {
