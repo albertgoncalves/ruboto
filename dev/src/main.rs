@@ -98,7 +98,15 @@ fn interact(message: &str, bot_id: &str, out: &ws::Sender) {
     );
     receive::token::transform(message)
         .as_ref()
-        .and_then(|tokens| receive::parse::transform(tokens))
+        .and_then(|tokens| {
+            println!(
+                "{}tokens{}   {:?}",
+                terminal::BOLD_GREEN,
+                terminal::END,
+                tokens,
+            );
+            receive::parse::transform(tokens)
+        })
         .map_or((), |payload| {
             println!(
                 "{}parsed{}   {:?}",
