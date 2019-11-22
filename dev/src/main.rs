@@ -123,7 +123,7 @@ fn interact(message: &str, bot_id: &str, out: &ws::Sender) {
                 }
                 receive::parse::Parse::Message(m) => {
                     backdoor!(m.text);
-                    if m.user != bot_id {
+                    if m.user != Some(bot_id) {
                         if let Some(r) = bot(&sanitize(m.text)) {
                             let _: Result<(), ws::Error> =
                                 send(m.channel, &r, out);

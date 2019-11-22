@@ -4,7 +4,7 @@ use crate::receive::token::Token;
 pub struct Message<'a> {
     pub channel: &'a str,
     pub text: &'a str,
-    pub user: &'a str,
+    pub user: Option<&'a str>,
 }
 
 #[derive(Debug, PartialEq)]
@@ -57,7 +57,18 @@ pub fn transform<'a>(tokens: &'a [Token]) -> Option<Parse<'a>> {
         Some(Parse::Message(Message {
             channel: stack[0].1,
             text: stack[6].1,
-            user: stack[9].1,
+            user: Some(stack[9].1),
+        }))
+    } else if (stack.len() == 14)
+        && (stack[1].0 == "channel")
+        && (stack[2].0 == "content")
+        && (stack[6] == ("is_shared", "false"))
+        && (stack[13] == ("type", "desktop_notification"))
+    {
+        Some(Parse::Message(Message {
+            channel: stack[1].1,
+            text: stack[2].1,
+            user: None,
         }))
     } else if (stack.len() == 2)
         && (stack[0].0 == "reply_to")
