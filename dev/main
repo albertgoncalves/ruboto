@@ -19,8 +19,8 @@ main() {
 }
 
 export EXIT_CODE
-
 while true; do
+    SECONDS=0
     set +e
     main
     EXIT_CODE=$?
@@ -29,5 +29,8 @@ while true; do
     printf "\e[1;30;47mexit\e[0m     %d\n" $EXIT_CODE
     if [ $EXIT_CODE -eq 0 ]; then
         break
+    fi
+    if (( SECONDS < 5 )); then
+        sleep 10
     fi
 done
