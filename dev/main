@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 
-# $ cat $WD/.env
+# $ cat "$WD/.env"
 # export SLACK_USER_TOKEN=...
 # export SLACK_BOT_TOKEN=...
 
 set -e
 
 export API="https://slack.com/api"
-
 export BOT_ID
 export URL
+export EXIT_CODE
 
 main() {
     cargo build --release
@@ -18,7 +18,6 @@ main() {
     cargo run --release
 }
 
-export EXIT_CODE
 while true; do
     SECONDS=0
     set +e
@@ -29,8 +28,7 @@ while true; do
     printf "\e[1;30;47mexit\e[0m     %d\n" $EXIT_CODE
     if [ $EXIT_CODE -eq 0 ]; then
         break
-    fi
-    if (( SECONDS < 5 )); then
+    elif (( SECONDS < 5 )); then
         sleep 10
     fi
 done
