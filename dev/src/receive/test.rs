@@ -3,8 +3,8 @@ mod test {
     use crate::receive::parse;
     use crate::receive::token;
 
-    const MESSAGE: [token::Token; 45] = [
-        token::Token::OpenBracket,
+    const MESSAGE: [token::Token; 83] = [
+        token::Token::OpenBrace,
         token::Token::Quotation("client_msg_id"),
         token::Token::Colon,
         token::Token::Quotation("abcd-1234"),
@@ -29,6 +29,44 @@ mod test {
         token::Token::Colon,
         token::Token::Quotation("TEAM1234"),
         token::Token::Comma,
+        token::Token::Quotation("blocks"),
+        token::Token::Colon,
+        token::Token::OpenBracket,
+        token::Token::OpenBrace,
+        token::Token::Quotation("type"),
+        token::Token::Colon,
+        token::Token::Quotation("rich_text"),
+        token::Token::Comma,
+        token::Token::Quotation("block_id"),
+        token::Token::Colon,
+        token::Token::Quotation("BLOCK1234"),
+        token::Token::Comma,
+        token::Token::Quotation("elements"),
+        token::Token::Colon,
+        token::Token::OpenBracket,
+        token::Token::OpenBrace,
+        token::Token::Quotation("type"),
+        token::Token::Colon,
+        token::Token::Quotation("rich_text_section"),
+        token::Token::Comma,
+        token::Token::Quotation("elements"),
+        token::Token::Colon,
+        token::Token::OpenBracket,
+        token::Token::OpenBrace,
+        token::Token::Quotation("type"),
+        token::Token::Colon,
+        token::Token::Quotation("text"),
+        token::Token::Comma,
+        token::Token::Quotation("text"),
+        token::Token::Colon,
+        token::Token::Quotation("\\\"hey\\\""),
+        token::Token::CloseBrace,
+        token::Token::CloseBracket,
+        token::Token::CloseBrace,
+        token::Token::CloseBracket,
+        token::Token::CloseBrace,
+        token::Token::CloseBracket,
+        token::Token::Comma,
         token::Token::Quotation("user_team"),
         token::Token::Colon,
         token::Token::Quotation("USER_TEAM1234"),
@@ -43,23 +81,23 @@ mod test {
         token::Token::Comma,
         token::Token::Quotation("event_ts"),
         token::Token::Colon,
-        token::Token::Quotation("1570906661.000200"),
+        token::Token::Quotation("1000000000.000000"),
         token::Token::Comma,
         token::Token::Quotation("ts"),
         token::Token::Colon,
-        token::Token::Quotation("1570906661.000200"),
-        token::Token::CloseBracket,
+        token::Token::Quotation("1000000000.000000"),
+        token::Token::CloseBrace,
     ];
     const PONG: [token::Token; 9] = [
-        token::Token::OpenBracket,
+        token::Token::OpenBrace,
         token::Token::Quotation("type"),
         token::Token::Colon,
         token::Token::Quotation("pong"),
         token::Token::Comma,
         token::Token::Quotation("reply_to"),
         token::Token::Colon,
-        token::Token::Literal("false"),
-        token::Token::CloseBracket,
+        token::Token::Literal("0"),
+        token::Token::CloseBrace,
     ];
 
     fn compare_array_vector<T: PartialEq>(array: &[T], vector: &[T]) -> bool {
@@ -74,19 +112,36 @@ mod test {
     #[test]
     fn token_message() {
         if let Some(tokens) = token::transform(
-            r#"{
-                "client_msg_id": "abcd-1234",
-                "suppress_notification": false,
-                "type": "message",
-                "text": "\"hey\"",
-                "user": "USER1234",
-                "team": "TEAM1234",
-                "user_team": "USER_TEAM1234",
-                "source_team": "SOURCE_TEAM1234",
-                "channel": "CHANNEL1234",
-                "event_ts": "1570906661.000200",
-                "ts": "1570906661.000200"
-            }"#,
+            "{
+                \"client_msg_id\":\"abcd-1234\",
+                \"suppress_notification\":false,
+                \"type\":\"message\",\
+                \"text\":\"\\\"hey\\\"\",
+                \"user\":\"USER1234\",
+                \"team\":\"TEAM1234\",
+                \"blocks\":[
+                    {
+                        \"type\":\"rich_text\",
+                        \"block_id\":\"BLOCK1234\",
+                        \"elements\":[
+                            {
+                                \"type\":\"rich_text_section\",
+                                \"elements\":[
+                                    {
+                                        \"type\":\"text\",
+                                        \"text\":\"\\\"hey\\\"\"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                \"user_team\":\"USER_TEAM1234\",
+                \"source_team\":\"SOURCE_TEAM1234\",
+                \"channel\":\"CHANNEL1234\",
+                \"event_ts\":\"1000000000.000000\",
+                \"ts\":\"1000000000.000000\"
+            }",
         ) {
             assert!(compare_array_vector(&MESSAGE, &tokens))
         } else {
@@ -109,7 +164,7 @@ mod test {
     #[test]
     fn token_pong() {
         if let Some(tokens) =
-            token::transform(r#"{"type": "pong", "reply_to": false}"#)
+            token::transform(r#"{"type": "pong", "reply_to": 0}"#)
         {
             assert!(compare_array_vector(&PONG, &tokens))
         } else {
@@ -119,7 +174,7 @@ mod test {
 
     #[test]
     fn parse_pong() {
-        assert_eq!(parse::transform(&PONG), Some(parse::Parse::Pong("false")))
+        assert_eq!(parse::transform(&PONG), Some(parse::Parse::Pong("0")))
     }
 
     #[test]
@@ -128,15 +183,15 @@ mod test {
             assert_eq!(
                 tokens,
                 vec![
-                    token::Token::OpenBracket,
+                    token::Token::OpenBrace,
                     token::Token::Quotation("foo"),
                     token::Token::Colon,
-                    token::Token::OpenBracket,
+                    token::Token::OpenBrace,
                     token::Token::Quotation("bar"),
                     token::Token::Colon,
                     token::Token::Quotation("baz"),
-                    token::Token::CloseBracket,
-                    token::Token::CloseBracket,
+                    token::Token::CloseBrace,
+                    token::Token::CloseBrace,
                 ],
             )
         } else {
@@ -159,8 +214,8 @@ mod test {
         assert_eq!(parse::transform(&vec![]), None);
         assert_eq!(
             parse::transform(&vec![
-                token::Token::OpenBracket,
-                token::Token::CloseBracket,
+                token::Token::OpenBrace,
+                token::Token::CloseBrace,
             ]),
             None,
         );
