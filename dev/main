@@ -11,17 +11,13 @@ export BOT_ID
 export URL
 export EXIT_CODE
 
-main() {
+while true; do
+    SECONDS=0
     cargo build --release
     BOT_ID=$(curl "$API/auth.test?token=$SLACK_BOT_TOKEN" | jq -r ".user_id")
     URL=$(curl "$API/rtm.connect?token=$SLACK_BOT_TOKEN" | jq -r ".url")
-    cargo run --release
-}
-
-while true; do
-    SECONDS=0
     set +e
-    main
+    cargo run --release
     EXIT_CODE=$?
     set -e
     # https://misc.flogisoft.com/bash/tip_colors_and_formatting
