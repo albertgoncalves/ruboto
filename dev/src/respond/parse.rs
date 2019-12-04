@@ -43,21 +43,12 @@ fn welcome(arg: &str) -> Cow<'_, str> {
 }
 
 fn savage(arg: &str) -> Cow<'_, str> {
-    if arg.ends_with('s') {
-        Cow::from(combine_3(
-            ":robot_face::savage: ",
-            arg,
-            " are like a single grain of sand in the Sahara desert that is \
-             Macho Madness :savage::robot_face:",
-        ))
-    } else {
-        Cow::from(combine_3(
-            ":robot_face::savage: ",
-            arg,
-            " is like a single grain of sand in the Sahara desert that is \
-             Macho Madness :savage::robot_face:",
-        ))
-    }
+    Cow::from(combine_3(
+        ":robot_face::savage: ",
+        arg,
+        " is like a single grain of sand in the Sahara desert that is \
+         Macho Madness :savage::robot_face:",
+    ))
 }
 
 pub fn transform<'a>(tokens: &[Token<'a>]) -> Option<Cow<'a, str>> {
