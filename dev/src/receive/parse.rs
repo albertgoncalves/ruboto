@@ -62,6 +62,17 @@ pub fn transform<'a>(tokens: &'a [Token]) -> Option<Parse<'a>> {
             text: stack[7].1,
             user: stack[14].1,
         }))
+    } else if (stack.len() == 11)
+        && (stack[0].0 == "channel")
+        && (stack[6].0 == "text")
+        && (stack[8] == ("type", "message"))
+        && (stack[9].0 == "user")
+    {
+        Some(Parse::Message(Message {
+            channel: stack[0].1,
+            text: stack[6].1,
+            user: stack[9].1,
+        }))
     } else if (stack.len() == 2)
         && (stack[0].0 == "reply_to")
         && (stack[1] == ("type", "pong"))
