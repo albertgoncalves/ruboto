@@ -45,6 +45,10 @@ fn sanitize(input: &str) -> String {
         .replace("&amp;", "&")
         .replace("&lt;", "<")
         .replace("&gt;", ">")
+        .replace("\\u201c", "\"")
+        .replace("\\u201d", "\"")
+        .replace("\\u2018", "\"")
+        .replace("\\u2019", "\"")
         .chars()
         .collect::<Vec<char>>();
     let n: usize = chars.len();
