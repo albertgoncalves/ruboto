@@ -172,17 +172,6 @@ mod test {
                  :savage::robot_face:"
             )),
         );
-        assert_eq!(
-            parse::transform(&[
-                token::Token::Fn("savage"),
-                token::Token::Arg("foo bars"),
-            ]),
-            Some(Cow::from(
-                ":robot_face::savage: foo bars are like a single grain of \
-                 sand in the Sahara desert that is Macho Madness \
-                 :savage::robot_face:"
-            )),
-        );
     }
 
     #[test]

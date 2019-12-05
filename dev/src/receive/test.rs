@@ -173,6 +173,33 @@ mod test {
     }
 
     #[test]
+    fn token_and_parse_short_message() {
+        let message: &str = "{
+            \"channel\":\"CHANNEL1234\",
+            \"client_msg_id\":\"abcd-1234\",
+            \"event_ts\":\"1000000000.000000\",
+            \"source_team\":\"SOURCE_TEAM1234\",
+            \"suppress_notification\":false,
+            \"team\":\"TEAM1234\",
+            \"text\":\"\\\"hey\\\"\",
+            \"ts\":\"1000000000.000000\",
+            \"type\":\"message\",
+            \"user\":\"USER1234\",
+            \"user_team\":\"USER_TEAM1234\",
+        }";
+        assert_eq!(
+            token::transform(message)
+                .as_ref()
+                .and_then(|xs| parse::transform(xs)),
+            Some(parse::Parse::Message(parse::Message {
+                channel: "CHANNEL1234",
+                text: "\\\"hey\\\"",
+                user: "USER1234",
+            }))
+        )
+    }
+
+    #[test]
     fn parse_pong() {
         assert_eq!(parse::transform(&PONG), Some(parse::Parse::Pong("0")))
     }
@@ -219,32 +246,5 @@ mod test {
             ]),
             None,
         );
-    }
-
-    #[test]
-    fn test_willis() {
-        let message: &str = "{
-            \"channel\":\"CHANNEL1234\",
-            \"client_msg_id\":\"abcd-1234\",
-            \"event_ts\":\"1000000000.000000\",
-            \"source_team\":\"SOURCE_TEAM1234\",
-            \"suppress_notification\":false,
-            \"team\":\"TEAM1234\",
-            \"text\":\"\\\"hey\\\"\",
-            \"ts\":\"1000000000.000000\",
-            \"type\":\"message\",
-            \"user\":\"USER1234\",
-            \"user_team\":\"USER_TEAM1234\",
-        }";
-        assert_eq!(
-            token::transform(message)
-                .as_ref()
-                .and_then(|xs| parse::transform(xs)),
-            Some(parse::Parse::Message(parse::Message {
-                channel: "CHANNEL1234",
-                text: "\\\"hey\\\"",
-                user: "USER1234",
-            }))
-        )
     }
 }
