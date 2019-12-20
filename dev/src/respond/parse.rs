@@ -1,5 +1,6 @@
 use crate::respond::token::Token;
 use std::borrow::Cow;
+use std::env::var;
 
 fn rev(arg: &str) -> Cow<'_, str> {
     Cow::from(arg.chars().rev().collect::<String>())
@@ -63,6 +64,7 @@ pub fn transform<'a>(tokens: &[Token<'a>]) -> Option<Cow<'a, str>> {
         [Token::Fn("bday"), Token::Arg(arg)] => Some(bday(arg)),
         [Token::Fn("welcome"), Token::Arg(arg)] => Some(welcome(arg)),
         [Token::Fn("savage"), Token::Arg(arg)] => Some(savage(arg)),
+        [Token::Fn("vaporwave")] => var("VAPORWAVE").ok().map(Cow::from),
         _ => None,
     }
 }
