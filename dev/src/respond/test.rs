@@ -2,6 +2,7 @@
 mod test {
     use crate::respond::parse;
     use crate::respond::token;
+    use crate::respond::token::Token;
     use std::borrow::Cow;
 
     #[test]
@@ -20,18 +21,18 @@ mod test {
                 )
             };
         }
-        assert_tokens!("foo bar", token::Token::Arg, token::Token::Arg);
-        assert_tokens!("foo\nbar", token::Token::Arg, token::Token::Arg);
-        assert_tokens!("foo bar ", token::Token::Arg, token::Token::Arg);
-        assert_tokens!(" foo bar ", token::Token::Arg, token::Token::Arg);
-        assert_tokens!("!foo bar", token::Token::Fn, token::Token::Arg);
-        assert_tokens!("!foo\nbar", token::Token::Fn, token::Token::Arg);
-        assert_tokens!("!foo bar ", token::Token::Fn, token::Token::Arg);
-        assert_tokens!(" !foo bar ", token::Token::Fn, token::Token::Arg);
-        assert_tokens!("!foo !bar", token::Token::Fn, token::Token::Fn);
-        assert_tokens!("!foo\n!bar", token::Token::Fn, token::Token::Fn);
-        assert_tokens!("!foo !bar ", token::Token::Fn, token::Token::Fn);
-        assert_tokens!(" !foo !bar ", token::Token::Fn, token::Token::Fn);
+        assert_tokens!("foo bar", Token::Arg, Token::Arg);
+        assert_tokens!("foo\nbar", Token::Arg, Token::Arg);
+        assert_tokens!("foo bar ", Token::Arg, Token::Arg);
+        assert_tokens!(" foo bar ", Token::Arg, Token::Arg);
+        assert_tokens!("!foo bar", Token::Fn, Token::Arg);
+        assert_tokens!("!foo\nbar", Token::Fn, Token::Arg);
+        assert_tokens!("!foo bar ", Token::Fn, Token::Arg);
+        assert_tokens!(" !foo bar ", Token::Fn, Token::Arg);
+        assert_tokens!("!foo !bar", Token::Fn, Token::Fn);
+        assert_tokens!("!foo\n!bar", Token::Fn, Token::Fn);
+        assert_tokens!("!foo !bar ", Token::Fn, Token::Fn);
+        assert_tokens!(" !foo !bar ", Token::Fn, Token::Fn);
     }
 
     #[test]
@@ -44,49 +45,42 @@ mod test {
     fn token_quotation() {
         assert_eq!(
             token::transform("\"foo bar\""),
-            Some(vec![token::Token::Arg("foo bar")]),
+            Some(vec![Token::Arg("foo bar")]),
         );
         assert_eq!(
             token::transform("\'foo bar\'"),
-            Some(vec![token::Token::Arg("foo bar")]),
+            Some(vec![Token::Arg("foo bar")]),
         );
         assert_eq!(token::transform("\'foo bar"), None);
         assert_eq!(token::transform("\"foo bar"), None);
         assert_eq!(
             token::transform("\"foo\nbar\""),
-            Some(vec![token::Token::Arg("foo\nbar")]),
+            Some(vec![Token::Arg("foo\nbar")]),
         );
         assert_eq!(
             token::transform("\'foo\nbar\'"),
-            Some(vec![token::Token::Arg("foo\nbar")]),
+            Some(vec![Token::Arg("foo\nbar")]),
         );
         assert_eq!(
             token::transform("\"foo\"bar"),
-            Some(vec![token::Token::Arg("foo"), token::Token::Arg("bar")]),
+            Some(vec![Token::Arg("foo"), Token::Arg("bar")]),
         );
     }
 
     #[test]
     fn parse_echo() {
         assert_eq!(
-            parse::transform(&[
-                token::Token::Fn("ECHO"),
-                token::Token::Arg("foo"),
-            ]),
+            parse::transform(&[Token::Fn("ECHO"), Token::Arg("foo"),]),
             Some(Cow::from("foo")),
         );
         assert_eq!(
             parse::transform(
-                vec![token::Token::Fn("ECHO"), token::Token::Arg("foo")]
-                    .as_slice()
+                vec![Token::Fn("ECHO"), Token::Arg("foo")].as_slice()
             ),
             Some(Cow::from("foo")),
         );
         assert_eq!(
-            parse::transform(&[
-                token::Token::Fn("ECHO"),
-                token::Token::Arg("foo bar"),
-            ]),
+            parse::transform(&[Token::Fn("ECHO"), Token::Arg("foo bar"),]),
             Some(Cow::from("foo bar")),
         );
     }
@@ -95,9 +89,9 @@ mod test {
     fn parse_join() {
         assert_eq!(
             parse::transform(&[
-                token::Token::Fn("JOIN"),
-                token::Token::Arg("foo"),
-                token::Token::Arg("bar"),
+                Token::Fn("JOIN"),
+                Token::Arg("foo"),
+                Token::Arg("bar"),
             ]),
             Some(Cow::from("foo bar")),
         );
@@ -106,10 +100,7 @@ mod test {
     #[test]
     fn parse_rev() {
         assert_eq!(
-            parse::transform(&[
-                token::Token::Fn("REV"),
-                token::Token::Arg("foo bar baz"),
-            ]),
+            parse::transform(&[Token::Fn("REV"), Token::Arg("foo bar baz"),]),
             Some(Cow::from("zab rab oof")),
         );
     }
@@ -117,10 +108,7 @@ mod test {
     #[test]
     fn parse_ban() {
         assert_eq!(
-            parse::transform(&[
-                token::Token::Fn("ban"),
-                token::Token::Arg("foo bar"),
-            ]),
+            parse::transform(&[Token::Fn("ban"), Token::Arg("foo bar"),]),
             Some(Cow::from(
                 ":robot_face::no_entry: \
                  foo bar has been banned \
@@ -132,10 +120,7 @@ mod test {
     #[test]
     fn parse_bday() {
         assert_eq!(
-            parse::transform(&[
-                token::Token::Fn("bday"),
-                token::Token::Arg("foo bar"),
-            ]),
+            parse::transform(&[Token::Fn("bday"), Token::Arg("foo bar"),]),
             Some(Cow::from(
                 ":robot_face::birthday: \
                  Happy birthday, foo bar! \
@@ -147,10 +132,7 @@ mod test {
     #[test]
     fn parse_welcome() {
         assert_eq!(
-            parse::transform(&[
-                token::Token::Fn("welcome"),
-                token::Token::Arg("foo bar"),
-            ]),
+            parse::transform(&[Token::Fn("welcome"), Token::Arg("foo bar"),]),
             Some(Cow::from(
                 ":robot_face::open_hands: \
                  Welcome, foo bar! \
@@ -162,10 +144,7 @@ mod test {
     #[test]
     fn parse_savage() {
         assert_eq!(
-            parse::transform(&[
-                token::Token::Fn("savage"),
-                token::Token::Arg("foo bar"),
-            ]),
+            parse::transform(&[Token::Fn("savage"), Token::Arg("foo bar"),]),
             Some(Cow::from(
                 ":robot_face::savage: foo bar is like a single grain of sand \
                  in the Sahara desert that is Macho Madness \
@@ -177,16 +156,13 @@ mod test {
     #[test]
     fn parse_invalid_fn() {
         assert_eq!(
-            parse::transform(&[
-                token::Token::Fn("foo"),
-                token::Token::Arg("bar"),
-            ]),
+            parse::transform(&[Token::Fn("foo"), Token::Arg("bar"),]),
             None,
         )
     }
 
     #[test]
     fn parse_invalid_arg() {
-        assert_eq!(parse::transform(&[token::Token::Arg("foo")]), None)
+        assert_eq!(parse::transform(&[Token::Arg("foo")]), None)
     }
 }

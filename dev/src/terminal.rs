@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-/* https://bixense.com/clicolors/ */
+/* NOTE: https://bixense.com/clicolors/ */
 
 pub const BOLD: &str = "\x1b[1m";
 pub const BOLD_RED: &str = "\x1b[1;31m";

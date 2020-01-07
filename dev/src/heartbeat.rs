@@ -1,26 +1,28 @@
 use crate::terminal;
-use std::process::exit;
-use std::sync;
+use std::process;
+use std::sync::atomic::{AtomicU8, Ordering};
+use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
+use ws::Sender;
 
 const PING_0: &str = r#"{"id": 0, "type": "ping"}"#;
 const PING_1: &str = r#"{"id": 1, "type": "ping"}"#;
 
-pub static SEND: sync::atomic::AtomicU8 = sync::atomic::AtomicU8::new(0);
-pub static RECEIVE: sync::atomic::AtomicU8 = sync::atomic::AtomicU8::new(0);
+pub static SEND: AtomicU8 = AtomicU8::new(0);
+pub static RECEIVE: AtomicU8 = AtomicU8::new(0);
 
 #[macro_export]
 macro_rules! store {
     ($a:expr, $v:expr $(,)?) => {
-        $a.store($v, sync::atomic::Ordering::SeqCst)
+        $a.store($v, Ordering::SeqCst)
     };
 }
 
 #[macro_export]
 macro_rules! load {
     ($a:expr $(,)?) => {
-        $a.load(sync::atomic::Ordering::SeqCst)
+        $a.load(Ordering::SeqCst)
     };
 }
 
@@ -30,7 +32,7 @@ macro_rules! print_ping {
     };
 }
 
-pub fn ping(out: sync::Arc<ws::Sender>) {
+pub fn ping(out: Arc<Sender>) {
     thread::spawn(move || loop {
         thread::sleep(Duration::from_secs(5));
         let receive: u8 = load!(RECEIVE);
@@ -45,7 +47,7 @@ pub fn ping(out: sync::Arc<ws::Sender>) {
                 print_ping!(0);
             }
         } else {
-            exit(1)
+            process::exit(1)
         }
     });
 }
