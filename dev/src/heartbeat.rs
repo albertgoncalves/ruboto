@@ -6,6 +6,8 @@ use std::thread;
 use std::time::Duration;
 use ws::Sender;
 
+const EXIT_FAILURE: i32 = 1;
+const WAIT: u64 = 10;
 const PING_0: &str = r#"{"id": 0, "type": "ping"}"#;
 const PING_1: &str = r#"{"id": 1, "type": "ping"}"#;
 
@@ -34,7 +36,7 @@ macro_rules! print_ping {
 
 pub fn ping(out: Arc<Sender>) {
     thread::spawn(move || loop {
-        thread::sleep(Duration::from_secs(5));
+        thread::sleep(Duration::from_secs(WAIT));
         let receive: u8 = load!(RECEIVE);
         if load!(SEND) == receive {
             if receive == 0 {
@@ -47,7 +49,7 @@ pub fn ping(out: Arc<Sender>) {
                 print_ping!(0);
             }
         } else {
-            process::exit(1)
+            process::exit(EXIT_FAILURE)
         }
     });
 }
