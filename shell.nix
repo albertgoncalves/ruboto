@@ -16,7 +16,7 @@ in
         buildInputs = shared;
         shellHook = hook;
     };
-    linux = gccStdenv.mkDerivation {
+    linux = mkShell {
         name = "_";
         buildInputs = [
             pkg-config
