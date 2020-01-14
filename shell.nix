@@ -17,7 +17,6 @@ in
         shellHook = hook;
     };
     linux = mkShell {
-        name = "_";
         buildInputs = [
             pkg-config
         ] ++ shared;
