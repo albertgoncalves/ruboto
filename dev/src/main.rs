@@ -40,40 +40,6 @@ fn send(channel: &str, message: &str, out: &Sender) -> Result<(), Error> {
     out.send(payload)
 }
 
-/* NOTE: https://api.slack.com/docs/message-formatting */
-fn sanitize(input: &str) -> String {
-    let chars: Vec<char> = input
-        .replace("&amp;", "&")
-        .replace("&lt;", "<")
-        .replace("&gt;", ">")
-        .replace("\\u201c", "\"")
-        .replace("\\u201d", "\"")
-        .replace("\\u2018", "\"")
-        .replace("\\u2019", "\"")
-        .chars()
-        .collect();
-    let n: usize = chars.len();
-    let mut output: String = String::with_capacity(n);
-    match chars[0] {
-        '\\' => (),
-        '\n' => output.push(' '),
-        c => output.push(c),
-    }
-    for i in 0..(n - 1) {
-        match (chars[i], chars[i + 1]) {
-            ('\\', 'n') | (_, '\n') => output.push(' '),
-            (_, '\\')
-            | (_, '*')
-            | (_, '_')
-            | (_, '~')
-            | (_, '`')
-            | (_, '>') => (),
-            (_, c) => output.push(c),
-        }
-    }
-    output
-}
-
 fn bot(text: &str) -> Option<Cow<'_, str>> {
     let tokens: Option<Vec<Token>> = respond::token::transform(text);
     println!(
@@ -129,7 +95,9 @@ fn interact(message: &str, bot_id: &str, out: &Sender) {
                      * case* though.
                      */
                     if m.user != bot_id {
-                        if let Some(r) = bot(&sanitize(m.text)) {
+                        if let Some(r) =
+                            bot(&receive::sanitize::sanitize(m.text))
+                        {
                             let _: Result<(), Error> =
                                 send(m.channel, &r, out);
                         }
@@ -155,29 +123,4 @@ fn main() {
     .unwrap();
     println!("{}end{}", terminal::BOLD_RED, terminal::END);
     process::exit(EXIT_FAILURE);
-}
-
-#[cfg(test)]
-mod test {
-    #[test]
-    fn sanitize() {
-        macro_rules! assert_sanitize {
-            ($x:expr, $y:expr $(,)?) => {
-                assert_eq!(crate::sanitize($x), $y.to_owned());
-            };
-        }
-        assert_sanitize!("foo", "foo");
-        assert_sanitize!("foo\\n", "foo ");
-        assert_sanitize!("\\nfoo", " foo");
-        assert_sanitize!("\\nfoo\\n", " foo ");
-        assert_sanitize!("\nfoo", " foo");
-        assert_sanitize!("\\\"foo", "\"foo");
-        assert_sanitize!("\\\"foo bar baz\\\"", "\"foo bar baz\"");
-        assert_sanitize!("\\\"foo\nbar\nbaz\\\"", "\"foo bar baz\"");
-        assert_sanitize!("\\\"foo\\nbar\\nbaz\\\"", "\"foo bar baz\"");
-        assert_sanitize!(
-            "\\\"foo\n \\nbar\n \\nbaz\\\"",
-            "\"foo   bar   baz\"",
-        );
-    }
 }

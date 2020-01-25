@@ -7,5 +7,14 @@ edition = "2018"
 codegen-units = 1
 panic = "abort"
 
+[profile.bench]
+codegen-units = 1
+
 [dependencies]
+bencher = "0.1.5"
 ws = { version = "0.6", features = ["ssl"] }
+
+[[bench]]
+name = "receive"
+path = "src/receive/bench.rs"
+harness = false

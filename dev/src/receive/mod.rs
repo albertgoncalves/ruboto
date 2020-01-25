@@ -1,10 +1,12 @@
 pub mod parse;
+pub mod sanitize;
 pub mod token;
 
 #[cfg(test)]
 mod test {
     use crate::receive::parse;
     use crate::receive::parse::Parse;
+    use crate::receive::sanitize;
     use crate::receive::token;
     use crate::receive::token::Token;
 
@@ -113,6 +115,48 @@ mod test {
             }
         }
         true
+    }
+
+    #[test]
+    #[allow(clippy::cognitive_complexity)]
+    fn sanitize() {
+        macro_rules! assert_all {
+            ($(($x:expr, $y:expr $(,)?),)*) => {
+                $(assert_eq!(sanitize::sanitize($x), $y.to_owned());)*
+            };
+        }
+        assert_all!(
+            ("foo", "foo"),
+            ("foo\\n", "foo "),
+            ("foo", "foo"),
+            ("foo\\n", "foo "),
+            ("\\nfoo", " foo"),
+            ("\\nfoo\\n", " foo "),
+            ("\nfoo", " foo"),
+            ("\\\"foo", "\"foo"),
+            ("\\\"foo bar baz\\\"", "\"foo bar baz\""),
+            ("\\\"foo\nbar\nbaz\\\"", "\"foo bar baz\""),
+            ("\\\"foo\\nbar\\nbaz\\\"", "\"foo bar baz\""),
+            ("\\\"foo\n \\nbar\n \\nbaz\\\"", "\"foo   bar   baz\""),
+            ("foo &amp;", "foo &"),
+            ("foo &lt;", "foo "),
+            ("foo &gt;", "foo "),
+            ("foo \\u201c", "foo \""),
+            ("foo \\u201d", "foo \""),
+            ("foo \\u2018", "foo \""),
+            ("foo \\u2019", "foo \""),
+            ("&amp; bar", "& bar"),
+            ("&lt; bar", " bar"),
+            ("&gt; bar", " bar"),
+            ("\\u201c bar", "\" bar"),
+            ("\\u201d bar", "\" bar"),
+            ("\\u2018 bar", "\" bar"),
+            ("\\u2019 bar", "\" bar"),
+            (
+                "&amp;&lt;&gt;\\u201c\\u201d\\u2018\\u2019\n\\*_~`",
+                "&\"\"\"\" ",
+            ),
+        );
     }
 
     #[test]
