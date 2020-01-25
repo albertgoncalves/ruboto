@@ -46,7 +46,7 @@ pub fn transform<'a>(tokens: &'a [Token]) -> Option<Parse<'a>> {
             break;
         }
     }
-    assert!(stack.capacity() == k);
+    debug_assert!(stack.capacity() == k);
     if stack.is_empty() {
         return None;
     }
