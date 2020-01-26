@@ -1,6 +1,3 @@
-use std::iter::Enumerate;
-use std::str::Chars;
-
 #[derive(Debug, PartialEq)]
 pub enum Token<'a> {
     OpenBrace,
@@ -17,71 +14,76 @@ pub fn transform(blob: &str) -> Option<Vec<Token>> {
     if blob.is_empty() {
         return None;
     }
-    let mut stack: Vec<Token> = Vec::with_capacity(blob.len());
-    let mut chars: Enumerate<Chars> = blob.chars().enumerate();
-    macro_rules! capture {
-        ($t:expr, $i:expr, $j:expr $(,)?) => {
-            stack.push($t(&blob[$i..$j]));
-            break;
-        };
-        ($t1:expr, $i:expr, $j:expr, $t2:expr $(,)?) => {
-            stack.push($t1(&blob[$i..$j]));
-            stack.push($t2);
-            break;
-        };
-    }
+    let n: usize = blob.len();
+    let mut stack: Vec<Token> = Vec::with_capacity(n);
+    let chars: &[u8] = blob.as_bytes();
+    let mut i: usize = 0;
     loop {
-        if let Some((i, c)) = chars.next() {
-            match c {
-                ' ' | '\n' => (),
-                '\\' => return None,
-                '{' => stack.push(Token::OpenBrace),
-                '}' => stack.push(Token::CloseBrace),
-                ':' => stack.push(Token::Colon),
-                ',' => stack.push(Token::Comma),
-                '[' => stack.push(Token::OpenBracket),
-                ']' => stack.push(Token::CloseBracket),
-                '\"' => loop {
-                    if let Some((j, c)) = chars.next() {
-                        match c {
-                            '\\' => {
-                                chars.next();
-                            }
-                            '\"' => {
-                                capture!(Token::Quotation, i + 1, j);
-                            }
-                            _ => (),
-                        }
-                    } else {
-                        return Some(stack);
-                    }
-                },
-                _ => loop {
-                    if let Some((j, c)) = chars.next() {
-                        match c {
-                            ' ' | '\n' => {
-                                capture!(Token::Literal, i, j);
-                            }
-                            '}' => {
-                                capture!(
-                                    Token::Literal,
-                                    i,
-                                    j,
-                                    Token::CloseBrace,
-                                );
-                            }
-                            ',' => {
-                                capture!(Token::Literal, i, j, Token::Comma);
-                            }
-                            _ => (),
-                        }
-                    } else {
-                        return Some(stack);
-                    }
-                },
-            }
-        } else {
+        if n <= i {
             return Some(stack);
         }
+        match chars[i] as char {
+            ' ' | '\n' => (),
+            '\\' => return None,
+            '{' => stack.push(Token::OpenBrace),
+            '}' => stack.push(Token::CloseBrace),
+            ':' => stack.push(Token::Colon),
+            ',' => stack.push(Token::Comma),
+            '[' => stack.push(Token::OpenBracket),
+            ']' => stack.push(Token::CloseBracket),
+            '\"' => {
+                let mut j: usize = i;
+                loop {
+                    j += 1;
+                    if j < n {
+                        match chars[j] as char {
+                            '\\' => {
+                                j += 1;
+                            }
+                            '\"' => {
+                                stack
+                                    .push(Token::Quotation(&blob[(i + 1)..j]));
+                                i = j;
+                                break;
+                            }
+                            _ => (),
+                        }
+                    } else {
+                        return Some(stack);
+                    }
+                }
+            }
+            _ => {
+                let mut j: usize = i;
+                loop {
+                    j += 1;
+                    if j < n {
+                        match chars[j] as char {
+                            ' ' | '\n' => {
+                                stack.push(Token::Literal(&blob[i..j]));
+                                i = j;
+                                break;
+                            }
+                            '}' => {
+                                stack.push(Token::Literal(&blob[i..j]));
+                                stack.push(Token::CloseBrace);
+                                i = j;
+                                break;
+                            }
+                            ',' => {
+                                stack.push(Token::Literal(&blob[i..j]));
+                                stack.push(Token::Comma);
+                                i = j;
+                                break;
+                            }
+                            _ => (),
+                        }
+                    } else {
+                        return Some(stack);
+                    }
+                }
+            }
+        }
+        i += 1;
     }
 }
