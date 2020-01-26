@@ -36,7 +36,7 @@ const MESSAGE: &str = "{
                     \"elements\":[
                         {
                             \"type\":\"text\",
-                            \"text\":\"\\\"hey\\\"\"
+                            \"text\":\"!JOIN \\\"foo bar\\\" baz\",
                         }
                     ]
                 }
