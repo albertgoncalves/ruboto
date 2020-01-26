@@ -15,6 +15,6 @@ bencher = "0.1.5"
 ws = { version = "0.6", features = ["ssl"] }
 
 [[bench]]
-name = "receive"
-path = "src/receive/bench.rs"
+name = "main"
+path = "src/bench.rs"
 harness = false
