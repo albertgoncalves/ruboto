@@ -8,9 +8,9 @@ pub fn sanitize(input: &str) -> String {
         if n <= i {
             break;
         }
-        match chars[i] as char {
-            '\n' => output.push(' '),
-            '\\' => {
+        match chars[i] {
+            b'\n' => output.push(' '),
+            b'\\' => {
                 if ((i + 1) < n) && (chars[i + 1] == b'n') {
                     output.push(' ');
                     i += 2;
@@ -31,7 +31,7 @@ pub fn sanitize(input: &str) -> String {
                     continue;
                 }
             }
-            '&' => {
+            b'&' => {
                 if ((i + 3) < n)
                     && ((chars[i + 1] == b'l') || (chars[i + 1] == b'g'))
                     && (chars[i + 2] == b't')
@@ -51,8 +51,8 @@ pub fn sanitize(input: &str) -> String {
                     continue;
                 }
             }
-            '*' | '_' | '~' | '`' => (),
-            c => output.push(c),
+            b'*' | b'_' | b'~' | b'`' => (),
+            c => output.push(c as char),
         }
         i += 1;
     }

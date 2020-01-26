@@ -22,25 +22,25 @@ pub fn transform(blob: &str) -> Option<Vec<Token>> {
         if n <= i {
             return Some(stack);
         }
-        match chars[i] as char {
-            ' ' | '\n' => (),
-            '\\' => return None,
-            '{' => stack.push(Token::OpenBrace),
-            '}' => stack.push(Token::CloseBrace),
-            ':' => stack.push(Token::Colon),
-            ',' => stack.push(Token::Comma),
-            '[' => stack.push(Token::OpenBracket),
-            ']' => stack.push(Token::CloseBracket),
-            '\"' => {
+        match chars[i] {
+            b' ' | b'\n' => (),
+            b'\\' => return None,
+            b'{' => stack.push(Token::OpenBrace),
+            b'}' => stack.push(Token::CloseBrace),
+            b':' => stack.push(Token::Colon),
+            b',' => stack.push(Token::Comma),
+            b'[' => stack.push(Token::OpenBracket),
+            b']' => stack.push(Token::CloseBracket),
+            b'\"' => {
                 let mut j: usize = i;
                 loop {
                     j += 1;
                     if j < n {
-                        match chars[j] as char {
-                            '\\' => {
+                        match chars[j] {
+                            b'\\' => {
                                 j += 1;
                             }
-                            '\"' => {
+                            b'\"' => {
                                 stack
                                     .push(Token::Quotation(&blob[(i + 1)..j]));
                                 i = j;
@@ -58,19 +58,19 @@ pub fn transform(blob: &str) -> Option<Vec<Token>> {
                 loop {
                     j += 1;
                     if j < n {
-                        match chars[j] as char {
-                            ' ' | '\n' => {
+                        match chars[j] {
+                            b' ' | b'\n' => {
                                 stack.push(Token::Literal(&blob[i..j]));
                                 i = j;
                                 break;
                             }
-                            '}' => {
+                            b'}' => {
                                 stack.push(Token::Literal(&blob[i..j]));
                                 stack.push(Token::CloseBrace);
                                 i = j;
                                 break;
                             }
-                            ',' => {
+                            b',' => {
                                 stack.push(Token::Literal(&blob[i..j]));
                                 stack.push(Token::Comma);
                                 i = j;
