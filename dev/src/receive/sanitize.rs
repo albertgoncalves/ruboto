@@ -3,7 +3,7 @@ pub fn sanitize(input: &str) -> String {
     let chars: &[u8] = input.as_bytes();
     let n: usize = chars.len();
     let mut output: String = String::with_capacity(n);
-    let mut i = 0;
+    let mut i: usize = 0;
     loop {
         if n <= i {
             break;

@@ -108,9 +108,13 @@ mod test {
         Token::CloseBrace,
     ];
 
-    fn compare_array_vector<T: PartialEq>(array: &[T], vector: &[T]) -> bool {
-        for i in 0..array.len() {
-            if array[i] != vector[i] {
+    fn compare_slices<T: PartialEq>(a: &[T], b: &[T]) -> bool {
+        let n: usize = a.len();
+        if n != b.len() {
+            return false;
+        }
+        for i in 0..n {
+            if a[i] != b[i] {
                 return false;
             }
         }
@@ -165,7 +169,7 @@ mod test {
             "{
                 \"client_msg_id\":\"abcd-1234\",
                 \"suppress_notification\":false,
-                \"type\":\"message\",\
+                \"type\":\"message\",
                 \"text\":\"\\\"hey\\\"\",
                 \"user\":\"USER1234\",
                 \"team\":\"TEAM1234\",
@@ -193,7 +197,7 @@ mod test {
                 \"ts\":\"1000000000.000000\"
             }",
         ) {
-            assert!(compare_array_vector(&MESSAGE, &tokens))
+            assert!(compare_slices(&MESSAGE, &tokens))
         } else {
             panic!()
         }
@@ -216,7 +220,7 @@ mod test {
         if let Some(tokens) =
             token::transform(r#"{"type": "pong", "reply_to": 0}"#)
         {
-            assert!(compare_array_vector(&PONG, &tokens))
+            assert!(compare_slices(&PONG, &tokens))
         } else {
             panic!()
         }
@@ -257,9 +261,8 @@ mod test {
     #[test]
     fn token_nested() {
         if let Some(tokens) = token::transform(r#"{"foo": {"bar": "baz"}}"#) {
-            assert_eq!(
-                tokens,
-                vec![
+            compare_slices(
+                &[
                     Token::OpenBrace,
                     Token::Quotation("foo"),
                     Token::Colon,
@@ -270,7 +273,8 @@ mod test {
                     Token::CloseBrace,
                     Token::CloseBrace,
                 ],
-            )
+                &tokens,
+            );
         } else {
             panic!()
         }
