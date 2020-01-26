@@ -8,6 +8,7 @@ mod respond;
 
 use bencher::Bencher;
 use receive::parse::Parse;
+use receive::token::Token;
 use std::borrow::Cow;
 
 fn sanitize(b: &mut Bencher) {
@@ -51,19 +52,20 @@ const MESSAGE: &str = "{
 
 fn receive_token(b: &mut Bencher) {
     b.iter(|| {
-        receive::token::transform(MESSAGE);
+        let _: Option<Vec<Token>> = receive::token::transform(MESSAGE);
     })
 }
 
 fn receive_token_parse(b: &mut Bencher) {
     b.iter(|| {
-        receive::token::transform(MESSAGE)
+        let _: Option<Parse> = receive::token::transform(MESSAGE)
             .as_ref()
             .and_then(|tokens| receive::parse::transform(tokens));
     })
 }
 
 fn receive_thru_respond(b: &mut Bencher) {
+    let expected: Option<Cow<'_, str>> = Some(Cow::from("foo bar baz"));
     b.iter(|| {
         if let Some(Parse::Message(m)) = receive::token::transform(MESSAGE)
             .as_ref()
@@ -74,7 +76,7 @@ fn receive_thru_respond(b: &mut Bencher) {
                 respond::token::transform(&text)
                     .as_ref()
                     .and_then(|tokens| respond::parse::transform(&tokens));
-            assert_eq!(response, Some(Cow::from("foo bar baz")))
+            assert_eq!(response, expected)
         } else {
             panic!()
         }

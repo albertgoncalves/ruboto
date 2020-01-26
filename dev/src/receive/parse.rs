@@ -50,7 +50,7 @@ pub fn transform<'a>(tokens: &'a [Token]) -> Option<Parse<'a>> {
     if stack.is_empty() {
         return None;
     }
-    stack.sort_by_key(|kv| kv.0);
+    stack.sort_unstable_by_key(|kv| kv.0);
     if (stack.len() == 16)
         && (stack[1].0 == "channel")
         && (stack[7].0 == "text")

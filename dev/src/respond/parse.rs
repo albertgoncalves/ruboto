@@ -6,21 +6,23 @@ fn rev(arg: &str) -> Cow<'_, str> {
     Cow::from(arg.chars().rev().collect::<String>())
 }
 
-fn combine_3(a: &str, b: &str, c: &str) -> String {
-    let mut payload: String =
-        String::with_capacity(a.len() + b.len() + c.len());
-    payload.push_str(a);
-    payload.push_str(b);
-    payload.push_str(c);
-    payload
+macro_rules! combine_3 {
+    ($a:expr, $b:expr, $c:expr $(,)?) => {{
+        let mut payload: String =
+            String::with_capacity($a.len() + $b.len() + $c.len());
+        payload.push_str($a);
+        payload.push_str($b);
+        payload.push_str($c);
+        payload
+    }};
 }
 
 fn join<'a>(left: &'a str, right: &'a str) -> Cow<'a, str> {
-    Cow::from(combine_3(left, " ", right))
+    Cow::from(combine_3!(left, " ", right))
 }
 
 fn ban(arg: &str) -> Cow<'_, str> {
-    Cow::from(combine_3(
+    Cow::from(combine_3!(
         ":robot_face::no_entry: ",
         arg,
         " has been banned :no_entry::robot_face:",
@@ -28,7 +30,7 @@ fn ban(arg: &str) -> Cow<'_, str> {
 }
 
 fn bday(arg: &str) -> Cow<'_, str> {
-    Cow::from(combine_3(
+    Cow::from(combine_3!(
         ":robot_face::birthday: Happy birthday, ",
         arg,
         "! :birthday::robot_face:",
@@ -36,7 +38,7 @@ fn bday(arg: &str) -> Cow<'_, str> {
 }
 
 fn welcome(arg: &str) -> Cow<'_, str> {
-    Cow::from(combine_3(
+    Cow::from(combine_3!(
         ":robot_face::open_hands: Welcome, ",
         arg,
         "! :open_hands::robot_face:",
@@ -44,7 +46,7 @@ fn welcome(arg: &str) -> Cow<'_, str> {
 }
 
 fn savage(arg: &str) -> Cow<'_, str> {
-    Cow::from(combine_3(
+    Cow::from(combine_3!(
         ":robot_face::savage: ",
         arg,
         " is like a single grain of sand in the Sahara desert that is \
