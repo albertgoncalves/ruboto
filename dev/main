@@ -4,7 +4,7 @@
 # export SLACK_USER_TOKEN=...
 # export SLACK_BOT_TOKEN=...
 
-set -e
+set -eu -o pipefail
 
 export API="https://slack.com/api"
 export BOT_ID
