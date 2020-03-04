@@ -68,6 +68,10 @@ pub fn transform<'a>(tokens: &[Token<'a>]) -> Option<Cow<'a, str>> {
         [Token::Fn("savage"), Token::Arg(arg)] => Some(savage(arg)),
         [Token::Fn("vaporwave")] => env::var("VAPORWAVE").ok().map(Cow::from),
         [Token::Fn("bernar")] => env::var("BERNAR").ok().map(Cow::from),
+        [Token::Fn("neverforget")] => {
+            env::var("NEVERFORGET").ok().map(Cow::from)
+        }
+        [Token::Fn("friends")] => env::var("FRIENDS").ok().map(Cow::from),
         _ => None,
     }
 }
