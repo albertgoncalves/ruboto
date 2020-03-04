@@ -12,7 +12,7 @@ codegen-units = 1
 
 [dependencies]
 bencher = "0.1.5"
-ws = { version = "0.6", features = ["ssl"] }
+ws = { version = "0.9.1", features = ["ssl"] }
 
 [[bench]]
 name = "main"
